@@ -2,47 +2,57 @@
   "use strict";
 
   // =========================================================================
-  // 1. TIEFGEHENDE TECHNISCHE SPEZIFIKATIONEN FÜR ALLE SYSTEM-BAUSTEINE
+  // 1. AUSFÜHRLICHE SPEZIFIKATIONEN FÜR ALLE SYSTEM-BAUSTEINE (7 BLÖCKE)
   // =========================================================================
   const NODE_DETAILS = {
     FS_QUEUE: {
       category: "Ticketsystem & Asset-CMDB • Freshservice",
       title: "Freshservice Queue „KI-Triage“ & Asset-CMDB",
       what:
-        "Zentraler Eingangspunkt für alle eingehenden IT-Störungen und Serviceanfragen. Neu erstellte Tickets werden regelbasiert in die isolierte Warteschlange „KI-Triage“ geleitet. Parallel dazu stellt die integrierte CMDB (Configuration Management Database) Stammdaten zu Computernummern, Seriennummern und zugewiesenen Endgeräten bereit.",
+        "Zentraler Eingangspunkt für alle eingehenden IT-Störungen und Serviceanfragen. Neu erstellte Tickets werden über den Workflow Automator regelbasiert in die isolierte Warteschlange „KI-Triage“ geleitet. Parallel dazu stellt die integrierte CMDB (Configuration Management Database) Stammdaten zu Computernummern, Seriennummern und zugewiesenen Endgeräten bereit, sodass Hardware-Tickets ohne Rückfragen verifiziert werden können.",
       tools:
-        "Freshservice ITSM • Workflow Automator • Freshservice REST API v2 (/api/v2/tickets, /assets, /notes) • Integrierte CMDB",
+        "Freshservice ITSM • Workflow Automator • Freshservice REST API v2 (/api/v2/tickets, /assets, /notes, /solutions) • Integrierte Asset-CMDB",
       where:
-        "Freshservice Admin → Agentengruppen (Gruppe „KI-Triage“), Workflow Automator (Ticket-Erstellung) & Assets (CMDB)",
+        "Freshservice Admin → Agentengruppen (Gruppe „KI-Triage“), Workflow Automator (Regel: Ticket-Erstellung) & Assets (CMDB)",
       how: [
-        "Dedizierte Agentengruppe „KI-Triage“ sowie einen eingeschränkten technischen Service-Account („KI-Assistent“) anlegen.",
-        "Automatisierungsregel: Jedes neu eingehende Ticket ohne Opt-out-Tag („keine-ki“ / „manuell“) wird der Queue „KI-Triage“ zugewiesen.",
-        "CMDB-Abfrage-Logik: Primäre Suche über erkannte Asset-Tags im Tickettext (z. B. NB-4711, PC-1024); sekundärer Fallback über die Requester-ID des Meldenden.",
-        "API-Rate-Limit-Steuerung: HTTP-Session mit automatischem Retry-Backoff bei HTTP 429 und festem Timeout von 15 Sekunden."
+        "Dedizierte Agentengruppe „KI-Triage“ sowie einen eingeschränkten technischen Service-Account („KI-Assistent“) anlegen und die numerischen IDs in Azure Key Vault hinterlegen.",
+        "Workflow-Automator-Regel: Jedes neu eingehende Ticket ohne Opt-out-Tag („keine-ki“ oder „manuell“) wird sofort der Queue „KI-Triage“ zugewiesen.",
+        "Zweistufiger CMDB-Abgleich: Primäre Suche über im Text erkannte Asset-Tags (z. B. NB-4711, PC-1024, LAP-008); sekundärer Fallback über die requester_id des Meldenden.",
+        "Resiliente API-Anbindung: HTTP-Session mit automatischem Retry-Backoff bei Rate-Limits (HTTP 429) und festem Request-Timeout von 15 Sekunden."
+      ],
+      blocked: [
+        "Keine öffentlichen Kundenantworten (Public Replies): Der Service-Account besitzt technisch keine Berechtigung, E-Mails an Endanwender zu versenden.",
+        "Kein eigenständiges Schließen von Tickets (Status 5 „Closed“): Tickets bleiben immer in Verantwortung eines IT-Mitarbeiters.",
+        "Kein Überschreiben manueller Techniker-Zuweisungen: Sobald ein Kollege das Ticket öffnet oder übernimmt, bricht die Automation sofort ab."
       ],
       security:
-        "Transportverschlüsselung über TLS 1.3. Dem API-Account sind auf Rollenebene ausschließlich Lese- und interne Notizrechte zugewiesen – öffentliche Kundenantworten (Public Replies) und Ticket-Abschlüsse (Status 5) sind technisch gesperrt.",
+        "Transportverschlüsselung über TLS 1.3. Der Freshservice API-Schlüssel ist nicht im Quellcode hinterlegt, sondern hardwaregesichert im Azure Key Vault gespeichert und wird erst zur Laufzeit abgerufen.",
       evolution:
-        "Aktuell reine Eingangsprüfung und interne Anreicherung. Später kann der Workflow Automator für definierte Service-Katalog-Items (z. B. Software-Standardpakete) automatische Genehmigungs- oder Bereitstellungsschritte anstoßen."
+        "Aktuell reine Eingangsprüfung und interne Anreicherung. Später kann der Workflow Automator für definierte Service-Katalog-Items (z. B. Standard-Software-Pakete) automatische Genehmigungs- oder Bereitstellungsschritte anstoßen."
     },
 
     ORCHESTRATOR: {
       category: "Steuerung, Guardrails & Audit • Azure Serverless",
       title: "Serverless Orchestrator, Kollisionsschutz & PII-Filter",
       what:
-        "Deterministische Steuerungsschicht zwischen Freshservice und den KI-Agenten. Sie übernimmt das atomare Sperren (Claiming) eines Tickets während der Analyse, verhindert Überschneidungen mit menschlichen Technikern, bereinigt personenbezogene Daten vor externen Suchen und protokolliert jeden Vorgang revisionssicher.",
+        "Deterministische Steuerungsschicht zwischen Freshservice und den KI-Agenten. Sie übernimmt das atomare Sperren (Claiming) eines Tickets während der Analyse, verhindert Überschneidungen mit menschlichen Technikern, bereinigt personenbezogene Daten vor externen Suchen und protokolliert jeden Vorgang revisionssicher inklusive Token- und Cent-Verbrauch.",
       tools:
         "Azure Functions (Linux, Python 3.11, Consumption Plan Y1) • Azure Key Vault (RBAC) • Azure Table Storage • Pydantic v2",
       where:
-        "Azure Portal → Ressourcengruppe rg-servicedesk-ai-prod → Function App, Key Vault & Storage Account",
+        "Azure Portal → Ressourcengruppe rg-servicedesk-ai-prod → Function App (sdai-func-*) & Key Vault",
       how: [
-        "Pre-Flight-Kollisionsschutz: Bearbeitung startet nur, wenn responder_id leer ist, das Ticket in „KI-Triage“ liegt und die letzte Änderung mindestens 3 Minuten zurückliegt.",
-        "Atomares Claiming & Post-Flight-Check: Während der KI-Laufzeit wird der KI-Service-Account als Bearbeiter eingetragen; unmittelbar vor dem Schreiben der Notiz wird erneut geprüft, ob inzwischen ein Techniker übernommen hat.",
+        "Pre-Flight-Kollisionsschutz: Die Verarbeitung startet nur, wenn responder_id leer ist, das Ticket in „KI-Triage“ liegt und die letzte Änderung mindestens 3 Minuten zurückliegt.",
+        "Atomares Claiming & Post-Flight-Check: Während der wenigen Sekunden Analyse wird der KI-Service-Account als Bearbeiter eingetragen; unmittelbar vor dem Schreiben der Notiz wird erneut geprüft, ob inzwischen ein Techniker übernommen hat.",
         "Deterministischer PII-Sanitizer (Regex-Pipeline): Entfernt E-Mail-Adressen, IPv4-Adressen, Telefonnummern, Hostnamen (NB-/PC-/LAP-/SRV-*) und Grußformeln mit Klarnamen vor externen Aufrufen.",
         "Revisionssicheres FinOps-Log: Jede Ausführung schreibt PartitionKey (YYYY-MM), Agentenname, Input-/Output-Tokens und exakte Cent-Kosten in Azure Table Storage."
       ],
+      blocked: [
+        "Keine Klartext-Ticketinhalte in System-Logs: Application Insights protokolliert ausschließlich technische Statuscodes und Ticket-IDs ohne personenbezogene Daten.",
+        "Keine hartkodierten Passwörter oder API-Keys im Git-Repository: Ein automatisierter Gitleaks-Security-Scan blockiert jeden Push mit Geheimnissen.",
+        "Kein unkontrollierter Dauerlauf: Jede Function-Ausführung ist durch ein hartes Timeout (max. 5 Minuten) und Rate-Limits abgesichert."
+      ],
       security:
-        "Zero-Trust-Modell ohne Secrets im Quellcode: Authentifizierung zwischen Azure-Diensten per System-Assigned Managed Identity (DefaultAzureCredential); externe Freshservice-Keys werden ausschließlich zur Laufzeit aus dem Azure Key Vault geladen.",
+        "Zero-Trust-Architektur: Authentifizierung zwischen allen Azure-Diensten erfolgt passwortlos über System-Assigned Managed Identity (DefaultAzureCredential) mit minimalen RBAC-Rollen.",
       evolution:
         "Die Guardrail-Engine steuert zentral den Autonomiegrad. Über Konfigurations-Flags pro Ticket-Kategorie lassen sich einzelne Ticketarten schrittweise von „Nur interne Notiz“ auf „Teilautomatisierte Rückfrage“ umstellen."
     },
@@ -51,7 +61,7 @@
       category: "KI-Agent 1 • Azure AI Foundry (gpt-4.1-mini)",
       title: "Agent 1: Triage-, Pflichtfeld- & Routing-Agent",
       what:
-        "Führt die strukturierte Erstklassifizierung jedes neuen Tickets durch. Erkennt Problemkategorie, Dringlichkeit (Priorität 1–4) und zuständige IT-Fachgruppe und prüft bei Hardware-/Client-Meldungen, ob eine gültige Computernummer vorliegt oder über die CMDB ermittelt werden konnte.",
+        "Führt die strukturierte Erstklassifizierung jedes neuen Tickets in Echtzeit durch. Erkennt Problemkategorie, Dringlichkeit (Priorität 1–4) und zuständige IT-Fachgruppe und prüft bei Hardware-/Client-Meldungen, ob eine gültige Computernummer vorliegt oder über die CMDB ermittelt werden konnte.",
       tools:
         "Azure AI Foundry Agent Service • Modell: gpt-4.1-mini (Data Zone Standard EU) • Function Calling (lookup_cmdb_asset)",
       where:
@@ -61,8 +71,13 @@
         "Pflichtfeld-Validierung: Wird ein Client-/Hardware-Problem erkannt (is_pc_issue: true) und liegt weder im Text noch in der CMDB ein Gerät vor, setzt der Orchestrator das Tag „pflichtdaten-fehlen“ und stoppt die weitere KI-Recherche.",
         "Fachgruppen-Routing: Ordnet das Ticket automatisiert den Zielgruppen 1st-Level-Support, Client-Management, Netzwerk-Infra oder M365-Admin zu."
       ],
+      blocked: [
+        "Prompt-Injection-Schutz: Ticket-Betreff und -Beschreibung werden in XML-Tags (<ticket_content>) gekapselt; Anweisungen innerhalb des Tickettexts werden strikt ignoriert.",
+        "Kein Direktkontakt zum Anwender: Agent 1 darf weder E-Mails formulieren noch Rückfragen selbstständig an Endanwender senden.",
+        "Keine Bearbeitung von Opt-out-Tickets: Tickets mit dem Tag „keine-ki“ oder „manuell“ werden vollständig übersprungen."
+      ],
       security:
-        "Prompt-Injection-Schutz: Ticket-Betreff und -Beschreibung werden in XML-Tags (<ticket_content>) als nicht vertrauenswürdige Nutzereingabe gekapselt. Der System-Prompt verbietet die Ausführung von Anweisungen aus dem Tickettext.",
+        "Verarbeitung ausschließlich innerhalb der EU Data Zone (Sweden Central). Microsoft speichert keine Prompts/Completions für Modell-Training (Zero-Data-Retention im Enterprise-Tarif).",
       evolution:
         "Aktuell setzt Agent 1 Tags und Zielgruppen für das Support-Team. In einer nächsten Ausbaustufe kann bei fehlender Computernummer automatisiert eine standardisierte Rückfrage-Vorlage an den Meldenden versendet werden."
     },
@@ -71,7 +86,7 @@
       category: "KI-Agent 2 • Azure AI Foundry (gpt-4.1)",
       title: "Agent 2: Wissens- & Lösungs-Agent (Human-in-the-Loop)",
       what:
-        "Erstellt für den zuständigen IT-Techniker eine strukturierte Voranalyse mit konkreten Lösungswegen. Kombiniert interne Wissensquellen (SharePoint-Wiki, Freshservice KB, historische gelöste Tickets) mit einer anonymisierten Hersteller-Recherche bei unbekannten Fehlercodes.",
+        "Bereitet für den zuständigen IT-Techniker eine fundierte technische Voranalyse mit konkreten Prüfschritten vor. Kombiniert interne Wissensquellen (SharePoint-Wiki, Freshservice KB, historische gelöste Tickets) mit einer anonymisierten Hersteller-Recherche bei unbekannten Fehlercodes.",
       tools:
         "Azure AI Foundry Agent Service • Modell: gpt-4.1 (Data Zone Standard EU) • Azure AI Search • Grounding with Bing Search",
       where:
@@ -81,8 +96,13 @@
         "RAG-Priorisierung: Ruft zunächst die Top-5-Treffer aus Azure AI Search ab. Nur wenn der Relevanz-Score unter 0,78 liegt, wird eine anonymisierte Bing-Recherche ausgelöst.",
         "Standardisierte HTML-Struktur der internen Notiz: 1. KI-Zusammenfassung, 2. Gefundene Wissensquellen, 3. Empfohlene Prüfungsschritte für Techniker, 4. Antwortentwurf für Endanwender."
       ],
+      blocked: [
+        "100 % Human-in-the-Loop-Sperre: Die Ausgabe wird über die API hart codiert mit „private: true“ gespeichert. Endanwender sehen KI-Notizen niemals direkt.",
+        "Kein Zugriff auf aktive Systemänderungen: Agent 2 führt keine PowerShell-Skripte, Passwort-Resets oder Active-Directory-Änderungen aus.",
+        "Keine Weitergabe interner Daten an Web-Suchen: Externe Suchanfragen dürfen keine Namen, Hostnamen oder IP-Adressen enthalten."
+      ],
       security:
-        "100 % Human-in-the-Loop: Die Ausgabe wird über den Freshservice-Connector hart codiert mit „private: true“ gespeichert. Endanwender erhalten niemals ungeprüfte KI-Texte.",
+        "Erst nach fachlicher Prüfung und Freigabe durch einen IT-Mitarbeiter wird der vorbereitete Antwortentwurf an den Endanwender versendet.",
       evolution:
         "Aktuell reiner Co-Pilot für Techniker. Bei wiederkehrenden Standardproblemen mit hohem Wissens-Score (≥ 0,92) kann das System später direkt einen vorausgefüllten Antwortentwurf im Ticket-Editor öffnen."
     },
@@ -91,15 +111,19 @@
       category: "Interne Wissensbasis • Azure AI Search",
       title: "Semantischer Wissens-Index (Azure AI Search Vector Store)",
       what:
-        "Zentrales semantisches Wissensgedächtnis des IT-Servicedesks. Speichert alle internen Standard-Arbeitsanweisungen (SOPs), SharePoint-Wiki-Seiten, veröffentlichten Freshservice-KB-Artikel und anonymisierten historischen Ticketlösungen.",
+        "Zentrales semantisches Wissensgedächtnis des IT-Servicedesks. Speichert alle internen Standard-Arbeitsanweisungen (SOPs), SharePoint-Wiki-Seiten, veröffentlichten Freshservice-KB-Artikel und anonymisierten historischen Ticketlösungen für sekundenschnelle Ähnlichkeitssuchen.",
       tools:
         "Azure AI Search (Basic Tier, Sweden Central) • HNSW-Vektorindex (1.536 Dimensionen) • Embedding-Modell: text-embedding-3-small (EU)",
       where:
-        "Azure Portal → Azure AI Search → Index „it-servicedesk-kb“",
+        "Azure Portal → Azure AI Search (sdai-srch-*) → Index „it-servicedesk-kb“",
       how: [
         "Index-Schema: Schlüsselfeld (SHA-256-Hash), Quelltyp (WIKI_PAGE, KB_ARTICLE, RESOLVED_TICKET), Titel, Text-Chunk, Zeitstempel und 1.536-dimensionaler Vektor.",
         "Chunking-Strategie: Zerlegung langer Dokumente in Abschnitte à 2.400 Zeichen mit 300 Zeichen Überlappung für präzise Kontexttreffer.",
         "Hybrid-Retrieval: Kombination aus Vektor-Ähnlichkeitssuche (HNSW) und semantischem Ranking."
+      ],
+      blocked: [
+        "Keine Speicherung ungefilterter Ticket-Klartexte: Alle Dokumente durchlaufen vor der Indexierung den PII-Sanitizer.",
+        "Kein öffentlicher Internet-Zugriff auf den Suchindex: Abfragen sind ausschließlich über authentifizierte Azure-Identitäten zulässig."
       ],
       security:
         "Datenhaltung ausschließlich im EU-Rechenzentrum Sweden Central. Zugriff durch die Function App erfolgt passwortlos über RBAC (Search Index Data Contributor).",
@@ -121,6 +145,10 @@
         "Query-Extraktion: Der PII-Filter entfernt vorab sämtliche Namen, E-Mail-Adressen, IPs, Telefonnummern sowie Hostnamen und reduziert die Anfrage auf max. 120 Zeichen.",
         "Kosten- und Audit-Tracking: Jeder externe Suchaufruf wird im Audit-Log mit „WebSearchTriggered = true“ markiert."
       ],
+      blocked: [
+        "Strikte PII-Ausgangssperre: Mitarbeiternamen, E-Mail-Adressen, Durchwahlen, interne IP-Adressen und Computernummern werden deterministisch herausgefiltert.",
+        "Kein Volltext-Upload von Tickets: Es gelangen niemals ganze Ticketbeschreibungen an externe Suchmaschinen, sondern nur abstrahierte Fehlercodes."
+      ],
       security:
         "Strikte Datentrennung: Nach außen gelangen ausschließlich abstrakte technische Fehlercodes (z. B. „Intune Enrollment Error 0x80180014“), keinerlei Unternehmens- oder Personendaten.",
       evolution:
@@ -141,8 +169,12 @@
         "Verbindliche 4-Punkte-Artikelstruktur: 1. Symptom & Fehlermeldung, 2. Betroffene Systeme / Voraussetzungen, 3. Schritt-für-Schritt-Lösung, 4. Verifikation.",
         "Wöchentlicher Aktualitäts-Audit (Montag 07:00 Uhr): Prüft in Azure Table Storage (KbGovernance) alle Artikel mit LastVerifiedAt > 180 Tage und versendet eine Prüf-E-Mail an den Artikel-Owner."
       ],
+      blocked: [
+        "Keine Direktveröffentlichung von KB-Artikeln: Artikel werden über die API zwingend mit „status: 1“ (Draft / Entwurf) angelegt und müssen von einem IT-Mitarbeiter freigegeben werden.",
+        "Keine Übernahme von Personen- oder Gerätenamen: Vor der Generierung entfernt der PII-Filter alle individuellen Ticketdaten."
+      ],
       security:
-        "Artikel werden über die Freshservice API zwingend mit „status: 1“ (Draft / Entwurf) angelegt und niemals ohne menschliche Freigabe veröffentlicht. Alle Ticketdaten werden vorab anonymisiert.",
+        "Volle redaktionelle Kontrolle durch das IT-Team; E-Mail-Benachrichtigungen laufen passwortlos über Microsoft Graph API.",
       evolution:
         "Aktuell reine Entwurfserstellung und E-Mail-Erinnerung. Später können freigegebene Artikel per Knopfdruck synchron ins SharePoint-Mitarbeiterportal gespiegelt werden."
     },
@@ -161,8 +193,12 @@
         "Anonymisierungs- & Chunking-Pipeline: Bereinigt alle Texte vor der Vektorisierung und aktualisiert bestehende Vektor-IDs idempotent per Upsert.",
         "Vollständige Entkopplung vom Live-Ticketbetrieb (keine Latenz-Auswirkungen tagsüber)."
       ],
+      blocked: [
+        "Keine Schreibrechte auf SharePoint Online: Die Managed Identity besitzt ausschließlich Leserechte (Sites.Read.All).",
+        "Keine Importe offener oder privater HR-/Security-Tickets: Es werden nur abgeschlossene IT-Support-Tickets synchronisiert."
+      ],
       security:
-        "Passwortlose Authentifizierung gegen Microsoft Graph über Managed Identity mit minimalen Leserechten (Sites.Read.All).",
+        "Passwortlose Authentifizierung gegen Microsoft Graph über Managed Identity mit minimalen Leserechten.",
       evolution:
         "Kann bei höherer Änderungsfrequenz im IT-Wiki problemlos von nächtlicher auf stündliche Delta-Synchronisation umgestellt werden."
     },
@@ -181,15 +217,19 @@
         "Echtzeit-Sprachpipeline: Streaming Speech-to-Text kombiniert mit neuronaler deutscher Sprachausgabe (z. B. de-DE-KatjaNeural / ConradNeural) unter 800 ms Latenz.",
         "Eskalations-Garantie: Auf Wunsch des Anrufers („Mitarbeiter sprechen“) sofortige Durchstellung an den 1st-Level-Support inklusive Übergabe des Gesprächsprotokolls."
       ],
+      blocked: [
+        "Keine dauerhafte Aufzeichnung von Sprachmitschnitten: Audio-Streams werden ausschließlich flüchtig im Arbeitsspeicher verarbeitet.",
+        "Keine Sackgassen-Menüs: Ein menschlicher Mitarbeiter ist jederzeit per Sprachbefehl erreichbar."
+      ],
       security:
-        "100 % EU-Datenverarbeitung in Sweden Central. Sprach-Streams werden flüchtig im Arbeitsspeicher verarbeitet und nicht als Audiodatei gespeichert.",
+        "100 % EU-Datenverarbeitung in Sweden Central unter denselben DSGVO- und Enterprise-Richtlinien wie der Ticket-Betrieb.",
       evolution:
         "Startet optional als Überlauf- und Nacht-Assistent (Stufe 2a) und kann später für Passwort-Reset-Self-Service (mit MFA-Verifizierung) ausgebaut werden (Stufe 2b)."
     }
   };
 
   // =========================================================================
-  // 2. TECHNISCHE DETAILS FÜR ALLE SCHNITTSTELLEN & DATENFLÜSSE (EDGES)
+  // 2. TECHNISCHE DETAILS FÜR ALLE SCHNITTSTELLEN & DATENFLÜSSE (7 BLÖCKE)
   // =========================================================================
   const EDGE_DETAILS = {
     E1: {
@@ -203,7 +243,11 @@
         "Authentifizierung über dedizierten Azure Function Host-/Function-Key (authLevel: function).",
         "Minimale Payload: Es wird ausschließlich die numerische ticket_id übertragen; die vollständigen Ticketdaten ruft Azure anschließend direkt per TLS-1.3-API ab."
       ],
-      security: "Anfragen ohne gültigen kryptografischen Function-Key werden vom Azure-Frontend sofort mit HTTP 401 abgewiesen.",
+      blocked: [
+        "Keine unauthentifizierten HTTP-Aufrufe: Ohne gültigen Function-Schlüssel weist Azure jede Anfrage sofort mit HTTP 401 ab.",
+        "Keine Übertragung von Ticket-Klartexten in der Webhook-URL."
+      ],
+      security: "TLS-1.3-Transportverschlüsselung zwischen Freshworks EU-Cloud und Azure Sweden Central.",
       evolution: "Kann um zusätzliche Trigger-Events (z. B. bei erneuter Rückmeldung eines Anwenders) erweitert werden."
     },
     E2: {
@@ -217,7 +261,11 @@
         "Zweistufige Suche: 1. Abfrage nach erkannter Asset-Nummer (NB-/PC-/LAP-*), 2. Fallback-Abfrage über die user_id des Ticket-Erstellers.",
         "Liegt bei einem Hardware-Problem kein gültiges Asset vor, wird das Ticket mit „pflichtdaten-fehlen“ getaggt und an den 1st-Level geleitet."
       ],
-      security: "Reiner Lesezugriff auf Asset-Stammdaten; API-Zugangsdaten werden zur Laufzeit aus dem Azure Key Vault gelesen.",
+      blocked: [
+        "Keine Schreib- oder Löschrechte auf CMDB-Assets: Die Schnittstelle arbeitet rein lesend.",
+        "Keine Speicherung von CMDB-Stammdaten außerhalb des Tickets."
+      ],
+      security: "API-Zugangsdaten werden zur Laufzeit per Managed Identity aus dem Azure Key Vault gelesen.",
       evolution: "Später erweiterbar um Abfrage von Garantie-Status, Betriebssystem-Version oder Intune-Compliance-Status."
     },
     E3: {
@@ -230,6 +278,10 @@
       how: [
         "Striktes JSON-Response-Format für fehlerfreie Weiterverarbeitung im Code.",
         "Bei fehlenden Pflichtdaten stoppt die Pipeline hier bewusst, um unnötige Token-Kosten in Agent 2 zu vermeiden."
+      ],
+      blocked: [
+        "Keine Ausführung von Befehlen aus dem Tickettext (XML-Kapselung als Untrusted Input).",
+        "Kein Verlassen der EU Data Zone."
       ],
       security: "Authentifizierung über Entra ID Bearer Token Provider (kein statischer OpenAI-API-Key nötig).",
       evolution: "Feinjustierung der Routing-Regeln jederzeit über die versionierte Prompt-Datei agent1_triage.md im Git-Repository."
@@ -245,6 +297,9 @@
         "Abruf der Top-5-Chunks inklusive Relevanz-Bewertung (@search.score).",
         "Schwellenwert-Logik: Bei Score ≥ 0,78 wird die Lösung direkt aus dem internen Firmenwissen abgeleitet."
       ],
+      blocked: [
+        "Kein Zugriff auf nicht freigegebene Abteilungs-Laufwerke oder vertrauliche HR-Dokumente."
+      ],
       security: "Passwortloser Zugriff per System-Assigned Managed Identity.",
       evolution: "Erweiterbar um rollenbasierte Filter (z. B. trennbar nach IT-Infrastruktur, ERP oder Produktions-IT)."
     },
@@ -258,6 +313,10 @@
       how: [
         "Deterministische Bereinigung aller Namen, E-Mail-Adressen, IPs und Gerätenummern vor der Suchanfrage.",
         "Begrenzung auf maximal 120 Zeichen für präzise Fehlercode-Treffer."
+      ],
+      blocked: [
+        "Keine ungefilterten Suchanfragen: Ohne Durchlauf des PII-Filters wird kein externer API-Call ausgeführt.",
+        "Keine Übermittlung von Firmennamen, Benutzernamen oder internen Hostnamen."
       ],
       security: "100 % anonymisierte Suchanfrage ohne Rückschluss auf Unternehmen oder Mitarbeiter.",
       evolution: "Optional eingrenzbar auf definierte Hersteller-Dokumentationen."
@@ -273,7 +332,11 @@
         "Post-Flight-Kollisionscheck unmittelbar vor dem POST-Request.",
         "Notiz wird hart codiert mit {\"private\": true} angelegt; responder_id wird anschließend wieder auf null gesetzt."
       ],
-      security: "Technisch ausgeschlossen, dass eine KI-Antwort ungesehen an Endanwender gesendet wird.",
+      blocked: [
+        "Technisch unmöglich, öffentliche Kundenantworten (\"private\": false) zu senden (zusätzlich durch CI/CD-Security-Check abgesichert).",
+        "Kein Überschreiben, falls zwischenzeitlich ein Techniker das Ticket übernommen hat."
+      ],
+      security: "100 % Human-in-the-Loop durch erzwungene interne Notiz.",
       evolution: "Später für ausgewählte Standard-Tickets auf teilautomatisierte Antwort-Vorbereitung erweiterbar."
     },
     E7: {
@@ -286,6 +349,10 @@
       how: [
         "Dubletten-Schutz: Abgleich mit Vector Store (Score < 0,85) vor Erstellung eines neuen Entwurfs.",
         "Anlage strikt als Entwurf (status: 1); E-Mail-Versand an Owner per Microsoft Graph API."
+      ],
+      blocked: [
+        "Keine direkte Veröffentlichung von Artikeln (status: 2 ist im Code ausgeschlossen).",
+        "Keine Übernahme von Klarnamen oder Computernummern in Entwürfe."
       ],
       security: "Vollständige Entfernung aller Personen- und Gerätedaten vor Erstellung des Artikel-Entwurfs.",
       evolution: "Kann künftig um automatische Verlinkung verwandter Artikel ergänzt werden."
@@ -301,6 +368,10 @@
         "Delta-Abruf der letzten 26 Stunden minimiert API-Last und Embedding-Kosten.",
         "Anonymisierung und Vektorisierung in Sweden Central."
       ],
+      blocked: [
+        "Kein schreibender Zugriff auf SharePoint-Dokumente.",
+        "Keine Beeinträchtigung der Live-Performance tagsüber."
+      ],
       security: "Passwortloser Lesezugriff über Entra ID Managed Identity (Sites.Read.All).",
       evolution: "Frequenz bei Bedarf auf stündliche Aktualisierung anpassbar."
     },
@@ -315,13 +386,17 @@
         "Bidirektionales Echtzeit-Audio-Streaming (< 800 ms Latenz).",
         "Automatische Ticket-Anlage in Freshservice inklusive Gesprächszusammenfassung als Private Note."
       ],
+      blocked: [
+        "Keine Speicherung von Sprachmitschnitten.",
+        "Keine Blockade der Durchstellung an menschliche Techniker."
+      ],
       security: "DSGVO-konforme Verarbeitung in der EU ohne dauerhafte Speicherung von Sprachaufnahmen.",
       evolution: "Start als Überlauf-/Nacht-Hotline; später ausbaubar um automatisierte Identitätsprüfung."
     }
   };
 
   // =========================================================================
-  // 3. DETAILLIERTE KOSTENPOSITIONEN (MIT TECHNISCHER & KAUFMÄNNISCHER LOGIK)
+  // 3. DETAILLIERTE KOSTENPOSITIONEN (7 BLÖCKE INKL. KAUFMÄNNISCHER LOGIK)
   // =========================================================================
   const COST_ITEM_DETAILS = {
     COST_FS: {
@@ -332,8 +407,11 @@
       where: "Freshservice Admin → Tarifplan & Kontoeinstellungen",
       how: [
         "0,00 € Zusatzkosten: REST API v2, Workflow Automator Webhooks und CMDB-Abfragen sind in den bestehenden Freshservice-Tarifen (Growth / Pro / Enterprise) enthalten.",
-        "Keine teuren Pro-Agent-KI-Add-ons (spart ca. 29 € – 49 € pro IT-Mitarbeiter und Monat).",
+        "Vermeidung teurer Sitzplatz-Add-ons: Native Hersteller-KI-Add-ons kosten oft 29 € – 49 € pro Agent und Monat – durch unsere eigene Azure-Architektur entfallen diese laufenden Pro-Kopf-Gebühren komplett.",
         "Hinweis: Für das Ticket-Claiming wird ein technischer Service-Account oder ein bestehender freier Agenten-Platz genutzt."
+      ],
+      blocked: [
+        "Keine automatische Buchung kostenpflichtiger Freshworks-Marketplace-Apps oder Pro-Seat-KI-Lizenzen."
       ],
       security: "Alle Zugriffe laufen über den bestehenden Auftragsverarbeitungsvertrag (AVV) mit Freshworks sowie TLS-1.3-Verschlüsselung.",
       evolution: "Skaliert ohne zusätzliche Lizenzgebühren bei steigendem Ticketvolumen."
@@ -349,7 +427,10 @@
         "Durchschnittlicher Verbrauch pro Ticket: ca. 1.200 Input-Tokens + 250 Output-Tokens ≈ 0,0009 € (unter 0,1 Cent pro Ticket).",
         "Kalkulation für 1.000 Tickets/Monat: ca. 1,60 € (inklusive CMDB-Tool-Call-Runde und Sicherheitsreserve)."
       ],
-      security: "Deployment in Sweden Central (Data Zone EU) mit TPM-Rate-Limit (15.000 Tokens/Min.) zum Schutz vor Kosten-Spitzen.",
+      blocked: [
+        "Kein unbegrenzter Token-Abruf: Das Deployment ist durch ein hartes Rate-Limit (15.000 TPM) sowie Max-Tokens (400) gedeckelt."
+      ],
+      security: "Deployment in Sweden Central (Data Zone EU); Daten verlassen niemals den europäischen Rechtsraum.",
       evolution: "Selbst bei 5.000 Tickets/Monat liegen die Kosten für Agent 1 unter 8,00 €."
     },
     COST_AGENT2: {
@@ -362,6 +443,10 @@
         "EU-Listenpreis (Stand 2026): ca. 2,05 € pro 1 Mio. Input-Tokens und 8,15 € pro 1 Mio. Output-Tokens.",
         "Durchschnittlicher Verbrauch pro Ticket: ca. 2.200 Input-Tokens (inkl. 5 Wiki-Chunks) + 450 Output-Tokens ≈ 0,008 € (0,8 Cent pro Ticket).",
         "Durch Azure Prompt Caching wird der wiederkehrende System-Prompt um 75 % rabattiert; Tickets ohne Pflichtdaten stoppen bereits vor Agent 2."
+      ],
+      blocked: [
+        "Kein Aufruf bei unvollständigen Pflichtfeldern (spart ca. 15–20 % unnötige Modellkosten).",
+        "Ausgabelänge hart auf max. 1.200 Tokens begrenzt."
       ],
       security: "Zero-Data-Retention & kein Modell-Training durch Microsoft im Enterprise-Standard-Tarif.",
       evolution: "Kosten wachsen streng linear mit dem tatsächlichen Ticketaufkommen."
@@ -377,6 +462,9 @@
         "E-Mail-Erinnerungen an Artikel-Verantwortliche über Microsoft Graph sind in bestehenden Microsoft-365-Lizenzen enthalten (0,00 € Zusatzkosten).",
         "Gesamtkosten bei 1.000 Tickets/Monat: ca. 2,40 €."
       ],
+      blocked: [
+        "Keine doppelten Artikelentwürfe: Dubletten-Check (Score ≥ 0,85) verhindert redundante KI-Generierungen."
+      ],
       security: "DSGVO-Anonymisierung aller Tickettexte vor Generierung des Entwurfs.",
       evolution: "Reduziert langfristig die Ticket-Bearbeitungszeit, da die interne Wissensbasis kontinuierlich wächst."
     },
@@ -391,6 +479,9 @@
         "Azure Key Vault: ca. 0,03 € pro 10.000 Secret-Abrufe (durch In-Memory-Caching unter 0,10 €/Monat).",
         "Azure Table Storage (revisionssicheres FinOps- & Audit-Log): ca. 0,05 €/Monat."
       ],
+      blocked: [
+        "Kein unkontrollierter Bing-Aufruf bei bekannten Problemen (Score ≥ 0,78 blockiert externe Web-Suchen)."
+      ],
       security: "Vorgeschalteter PII-Filter verhindert jeden Abfluss personenbezogener Daten bei Bing-Anfragen.",
       evolution: "Transparentes Controlling aller Token- und API-Kosten pro Ticket und Agent in Echtzeit."
     },
@@ -404,6 +495,9 @@
         "Azure Functions (Consumption Plan): Die ersten 1.000.000 Ausführungen und 400.000 GB-Sekunden pro Monat sind dauerhaft kostenlos (0,00 €).",
         "EU-Embeddings (text-embedding-3-small): ca. 0,02 € pro 1 Mio. Tokens (unter 0,10 €/Monat für den nächtlichen Delta-Sync).",
         "Vector Store Speicher & Index-Betrieb (kompaktes IT-Wiki-Volumen): ca. 1,35 € – 1,50 €/Monat."
+      ],
+      blocked: [
+        "Keine dauerhaft laufenden virtuellen Maschinen (24/7-Fixkosten für VMs entfallen komplett durch Serverless-Architektur)."
       ],
       security: "Passwortloser Betrieb über Managed Identity in der EU-Region.",
       evolution: "Skaliert automatisch von 0 auf hunderte gleichzeitige Anfragen ohne Server-Wartung."
@@ -420,6 +514,9 @@
         "Neural Text-to-Speech (deutsche Stimme): ca. 0,70 € pro Gesprächsstunde (basierend auf aktivem Redeanteil der KI).",
         "Gesamt für 750 Anrufe (50 Std.): ca. 82,50 €/Monat."
       ],
+      blocked: [
+        "Keine festen Grundgebühren bei 0 Anrufen (reine nutzungsabhängige Abrechnung)."
+      ],
       security: "Flüchtige Verarbeitung der Audio-Streams im EU-Rechenzentrum ohne Aufzeichnung.",
       evolution: "Jederzeit zu- oder abschaltbar, z. B. zunächst nur außerhalb der regulären Servicezeiten."
     },
@@ -433,6 +530,9 @@
         "Keine festen monatlichen Callcenter-Agentenlizenzen – Abrechnung rein nach Gesprächsminuten.",
         "Kalkulation für 750 Anrufe à 4 Minuten (3.000 Minuten/Monat) inkl. Rufnummern-Routing: ca. 68,00 €/Monat."
       ],
+      blocked: [
+        "Keine ausgehenden Werbe- oder Massenanrufe (Outbound-Sperre auf Rufnummernebene)."
+      ],
       security: "Verschlüsselte Sprachübertragung (SRTP / TLS) nach Enterprise-Standard.",
       evolution: "Nahtlose Integration in bestehende Microsoft-Teams- oder SIP-Telefonie-Umgebungen."
     },
@@ -445,6 +545,9 @@
       how: [
         "Mehrstufiger Gesprächsverlauf (ca. 6–8 Dialogrunden pro 4-Minuten-Anruf).",
         "Kalkulation für 750 Anrufe/Monat: ca. 51,00 €/Monat."
+      ],
+      blocked: [
+        "Maximale Gesprächsdauer pro Session begrenzt (automatische Übergabe an Techniker bei komplexen Störungen)."
       ],
       security: "Identische EU-Datenschutz- und Compliance-Garantien wie im Ticket-Betrieb.",
       evolution: "Kann später für standardisierte Self-Service-Vorgänge (z. B. Statusabfrage offener Tickets) genutzt werden."
@@ -493,10 +596,10 @@ flowchart LR
     NIGHTLY_SYNC -->|"9. Nacht-Indexierung"| VECTOR_STORE
     VOICE_HOTLINE <-->|"10. Echtzeit-Voice-Stream"| AGENT_2
 
-    classDef fsStyle fill:#f4f8ff,stroke:#0f62fe,stroke-width:1.8px,color:#09090b;
-    classDef azStyle fill:#f4f9fc,stroke:#0284c7,stroke-width:1.8px,color:#09090b;
-    classDef secStyle fill:#f3faf6,stroke:#116638,stroke-width:1.8px,color:#09090b;
-    classDef voiceStyle fill:#f8f5ff,stroke:#5b21b6,stroke-width:1.8px,stroke-dasharray: 5 4,color:#09090b;
+    classDef fsStyle fill:#f0f6ff,stroke:#0f62fe,stroke-width:1.8px,color:#0f172a;
+    classDef azStyle fill:#f0f9ff,stroke:#0284c7,stroke-width:1.8px,color:#0f172a;
+    classDef secStyle fill:#f0fdf4,stroke:#0d6832,stroke-width:1.8px,color:#0f172a;
+    classDef voiceStyle fill:#f5f3ff,stroke:#5b21b6,stroke-width:1.8px,stroke-dasharray: 5 4,color:#0f172a;
 
     class FS_QUEUE,ORCHESTRATOR fsStyle;
     class AGENT_1,AGENT_2,AGENT_3 azStyle;
@@ -507,7 +610,7 @@ flowchart LR
   // =========================================================================
   // 5. GOOGLE-MAPS-ARTIGE KARTENSTEUERUNG (PAN & ZOOM)
   // =========================================================================
-  let scale = 0.88;
+  let scale = 0.9;
   let panX = 16;
   let panY = 20;
   let isDragging = false;
@@ -585,7 +688,7 @@ flowchart LR
     });
 
     document.getElementById("zoomResetBtn").addEventListener("click", () => {
-      scale = 0.88;
+      scale = 0.9;
       panX = 16;
       panY = 20;
       applyTransform();
@@ -616,18 +719,18 @@ flowchart LR
       theme: "base",
       themeVariables: {
         fontFamily: '"Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif',
-        fontSize: "14px",
-        primaryColor: "#f4f8ff",
+        fontSize: "15px",
+        primaryColor: "#f0f6ff",
         primaryBorderColor: "#0f62fe",
-        lineColor: "#71717a",
+        lineColor: "#64748b",
         clusterBkg: "#ffffff",
-        clusterBorder: "#d4d4d8"
+        clusterBorder: "#cbd5e1"
       },
       flowchart: {
         useMaxWidth: false,
         htmlLabels: true,
-        nodeSpacing: 52,
-        rankSpacing: 85,
+        nodeSpacing: 56,
+        rankSpacing: 90,
         curve: "basis"
       }
     });
@@ -681,7 +784,7 @@ flowchart LR
   }
 
   // =========================================================================
-  // 6. DETAIL-MODAL (6 STRUKTURIERTE BEREICHE AUF REINWEISSEM HINTERGRUND)
+  // 6. DETAIL-MODAL (7 STRUKTURIERTE BEREICHE AUF REINWEISSEM HINTERGRUND)
   // =========================================================================
   const modal = document.getElementById("infoModal");
 
@@ -696,12 +799,23 @@ flowchart LR
     document.getElementById("modalEvolution").textContent =
       data.evolution || "Aktuell 100 % Human-in-the-Loop; schrittweise erweiterbar.";
 
-    const ul = document.getElementById("modalHow");
-    ul.innerHTML = "";
+    const ulHow = document.getElementById("modalHow");
+    ulHow.innerHTML = "";
     data.how.forEach((step) => {
       const li = document.createElement("li");
       li.textContent = step;
-      ul.appendChild(li);
+      ulHow.appendChild(li);
+    });
+
+    const ulBlocked = document.getElementById("modalBlocked");
+    ulBlocked.innerHTML = "";
+    const blockedItems = data.blocked || [
+      "Keine unkontrollierten Schreibaktionen ohne vorherige Berechtigungsprüfung."
+    ];
+    blockedItems.forEach((rule) => {
+      const li = document.createElement("li");
+      li.textContent = rule;
+      ulBlocked.appendChild(li);
     });
 
     modal.hidden = false;

@@ -11,10 +11,10 @@
   <header class="site-header">
     <div class="container header-inner">
       <div class="header-brand">
-        <span class="status-indicator"></span>
+        <span class="status-indicator" aria-hidden="true"></span>
         <span class="brand-name">IT-Servicedesk Plattform</span>
         <span class="brand-divider">/</span>
-        <span class="brand-sub">Architektur- &amp; FinOps-Vorlage (EU Data Zone)</span>
+        <span class="brand-sub">Architektur-, Sicherheits- &amp; FinOps-Vorlage (EU Data Zone)</span>
       </div>
       <nav class="header-nav" aria-label="Hauptnavigation">
         <a href="#betriebsmodus">Betriebsmodus</a>
@@ -31,7 +31,7 @@
       <h1>Automatisierte Ticket-Voranalyse &amp; Wissensmanagement im IT-Servicedesk</h1>
       <p class="intro-lead">
         Integrierte Enterprise-Architektur auf Basis von <strong>Freshservice ITSM</strong>, <strong>Microsoft 365</strong> und <strong>Microsoft Azure (EU Data Zone)</strong>.
-        Konzipiert für strikte DSGVO-Konformität, volle Kostentransparenz und nahtlose Unterstützung des Support-Teams.
+        Konzipiert für strikte DSGVO-Konformität, volle Kostentransparenz und spürbare Entlastung im IT-Alltag.
       </p>
 
       <div class="summary-grid">
@@ -82,7 +82,7 @@
           <h2>Interaktive Systemarchitektur</h2>
           <p class="section-subtitle">
             Ziehen Sie die Karte per Maus zur Navigation und nutzen Sie das Mausrad oder die Steuerungsbuttons zum Zoomen.
-            <strong>Klicken Sie auf einen System-Baustein oder eine Schnittstelle</strong>, um die genauen Tools, technischen Parameter und Sicherheitsmechanismen einzusehen.
+            <strong>Klicken Sie auf einen System-Baustein oder eine Schnittstelle</strong>, um die genauen Tools, technischen Parameter, Sperrgrenzen und Sicherheitsmechanismen einzusehen.
           </p>
         </div>
       </div>
@@ -111,7 +111,7 @@
         </div>
 
         <div class="interfaces-directory">
-          <h3>Schnittstellen- &amp; Datenfluss-Verzeichnis (Direktauswahl für technische Details)</h3>
+          <h3>Schnittstellen- &amp; Datenfluss-Verzeichnis (Direktauswahl für technische Spezifikationen)</h3>
           <div id="edgeButtonsGrid" class="interfaces-grid"></div>
         </div>
       </div>
@@ -222,7 +222,7 @@
     </div>
   </footer>
 
-  <!-- Reinweißes, großzügiges Detail-Modal -->
+  <!-- Reinweißes, breites Detail-Modal (960px) mit 7 strukturierten Blöcken -->
   <div id="infoModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
     <div class="modal-window">
       <div class="modal-header">
@@ -234,17 +234,17 @@
       </div>
       <div class="modal-body">
         <div class="detail-group">
-          <h3>1. Fachliche Aufgabe &amp; Nutzen</h3>
+          <h3>1. Fachliche Aufgabe &amp; Mehrwert</h3>
           <p id="modalWhat"></p>
         </div>
 
         <div class="detail-grid-2">
           <div class="detail-group">
-            <h3>2. Eingesetzte Tools &amp; Dienste</h3>
+            <h3>2. Eingesetzte Technologien &amp; Tools</h3>
             <div id="modalTools" class="spec-box"></div>
           </div>
           <div class="detail-group">
-            <h3>3. Konfigurationsort (System &amp; Pfad)</h3>
+            <h3>3. Konfigurationsort (System &amp; Menüpfad)</h3>
             <div id="modalWhere" class="spec-box"></div>
           </div>
         </div>
@@ -254,13 +254,18 @@
           <ul id="modalHow" class="spec-list"></ul>
         </div>
 
+        <div class="detail-group block-guardrails">
+          <h3>5. Was strikt blockiert ist (Technische Sperrgrenzen &amp; Guardrails)</h3>
+          <ul id="modalBlocked" class="blocked-list"></ul>
+        </div>
+
         <div class="detail-grid-2">
           <div class="detail-group security-panel">
-            <h3>5. Datenschutz, Rechte &amp; Compliance (DSGVO)</h3>
+            <h3>6. Datenschutz, Rechte &amp; Compliance (DSGVO)</h3>
             <p id="modalSecurity"></p>
           </div>
           <div class="detail-group evolution-panel">
-            <h3>6. Betriebsmodus &amp; Ausbaupotenzial</h3>
+            <h3>7. Betriebsmodus &amp; Ausbaupotenzial</h3>
             <p id="modalEvolution"></p>
           </div>
         </div>
