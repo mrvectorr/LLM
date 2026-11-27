@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Azure AI Servicedesk – Management &amp; Architektur-Blueprint</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Mermaid.js (v11) über CDN für zero-build GitHub Pages Betrieb -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="brand-badge">EU Data Zone • DSGVO-konform</span>
+        <h1>Azure AI Servicedesk – Architektur &amp; Business Case</h1>
+        <p class="subtitle">
+          Interaktive Management-Übersicht: Stufe 1 (Ticket- &amp; Wissens-KI) sowie Ausbaustufe 2 (Voice- &amp; TTS-Hotline)
+        </p>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggle" class="btn btn-secondary" type="button" aria-label="Farbschema wechseln">
+          🌗 Design wechseln
+        </button>
+        <a href="#roi-section" class="btn btn-primary">Zu Kosten &amp; ROI ↓</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- KPI-Kurzübersicht für Entscheider -->
+    <section class="kpi-strip" aria-label="Kennzahlen im Überblick">
+      <article class="kpi-card">
+        <span class="kpi-label">Laufende Kosten (Stufe 1)</span>
+        <strong class="kpi-value">9 € – 18 € / Mon.</strong>
+        <span class="kpi-meta">Pay-as-you-go bei 1.000 Tickets/Monat</span>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">Ausbaustufe 2 (inkl. Voice/TTS)</span>
+        <strong class="kpi-value">140 € – 290 € / Mon.</strong>
+        <span class="kpi-meta">Inkl. Echtzeit-Telefonie &amp; Neural Voices</span>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">Datenschutz &amp; Compliance</span>
+        <strong class="kpi-value">100 % EU-Cloud</strong>
+        <span class="kpi-meta">Sweden Central • Kein KI-Training</span>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">Human-in-the-Loop</span>
+        <strong class="kpi-value">0 Blind-Aktionen</strong>
+        <span class="kpi-meta">Nur interne Notizen &amp; KB-Entwürfe</span>
+      </article>
+    </section>
+
+    <!-- Sektion 1: Interaktive Systemarchitektur -->
+    <section class="card section-block" id="architecture-section">
+      <div class="section-header">
+        <div>
+          <h2>1. Interaktive Systemarchitektur &amp; Datenflüsse</h2>
+          <p class="section-desc">
+            Klicken Sie auf einen beliebigen <strong>System-Baustein (Kasten)</strong> oder direkt auf eine <strong>Verbindung (Pfeil / Beschriftung)</strong>, um zu erfahren, was dort passiert, wo es im System eingestellt wird und welche Sicherheitsregeln greifen.
+          </p>
+        </div>
+        <div class="legend-pills">
+          <span class="pill pill-core">Stufe 1: Kernbetrieb</span>
+          <span class="pill pill-voice">Stufe 2: Voice / TTS</span>
+          <span class="pill pill-sec">DSGVO &amp; Schutz</span>
+        </div>
+      </div>
+
+      <div class="diagram-wrapper">
+        <div id="mermaidContainer" class="mermaid-container" aria-label="Interaktives Architekturdiagramm">
+          <!-- Wird durch app.js gerendert und mit Klick-Handlern versehen -->
+        </div>
+      </div>
+
+      <!-- Direkte Klick-Matrix für Verbindungen (Edges) -->
+      <div class="connections-panel">
+        <h3>Verbindungs-Matrix (Direktzugriff auf alle Datenflüsse &amp; Schnittstellen)</h3>
+        <p class="muted-text">
+          Wählen Sie eine Verbindung aus, um die exakte Konfiguration und die Datenschutz-Regeln dieser Schnittstelle anzuzeigen:
+        </p>
+        <div id="edgeButtonsGrid" class="edge-grid">
+          <!-- Wird dynamisch aus app.js befüllt -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Sektion 2: Wirtschaftlichkeit, Ausbaustufen & ROI -->
+    <section class="card section-block" id="roi-section">
+      <div class="section-header">
+        <div>
+          <h2>2. Kosten, Ausbaustufen &amp; ROI / Break-Even-Analyse</h2>
+          <p class="section-desc">
+            Kalkulation auf Basis realer Microsoft-Azure-Verbrauchspreise (EU Data Zone, Stand 2026) ohne teure Pro-User-Sitzplatzlizenzen.
+          </p>
+        </div>
+      </div>
+
+      <!-- Interaktiver Volumen-Schieberegler -->
+      <div class="simulator-box">
+        <div class="simulator-controls">
+          <div class="control-group">
+            <label for="ticketSlider">
+              Monatliches Ticketvolumen (Stufe 1): <strong id="ticketCountLabel">1.000 Tickets</strong>
+            </label>
+            <input type="range" id="ticketSlider" min="250" max="5000" step="250" value="1000" />
+            <div class="range-ticks">
+              <span>250</span>
+              <span>1.000 (Standard)</span>
+              <span>2.500</span>
+              <span>5.000</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="callSlider">
+              Monatliche Hotline-Anrufe (Ausbaustufe 2 Voice/TTS): <strong id="callCountLabel">750 Anrufe</strong>
+            </label>
+            <input type="range" id="callSlider" min="0" max="3000" step="250" value="750" />
+            <div class="range-ticks">
+              <span>0 (Nur Text)</span>
+              <span>750 (Standard)</span>
+              <span>1.500</span>
+              <span>3.000</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="rateSlider">
+              Interner IT-Stundensatz (Vollkosten): <strong id="rateLabel">60 € / Std.</strong>
+            </label>
+            <input type="range" id="rateSlider" min="45" max="90" step="5" value="60" />
+            <div class="range-ticks">
+              <span>45 €</span>
+              <span>60 €</span>
+              <span>75 €</span>
+              <span>90 €</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Szenario-Vergleichskarten -->
+        <div class="scenarios-grid">
+          <!-- Szenario A -->
+          <article class="scenario-card scenario-a">
+            <div class="scenario-head">
+              <span class="tag-stage">Szenario A • Aktueller Start</span>
+              <h3>Stufe 1: Ticket-, Wissens- &amp; Doku-KI</h3>
+              <p class="scenario-price" id="costStage1Total">13,50 € <span>/ Monat</span></p>
+            </div>
+            <ul class="cost-breakdown" id="breakdownStage1">
+              <!-- Dynamisch befüllt -->
+            </ul>
+            <div class="scenario-footer">
+              <strong>FinOps-Schutzdeckel:</strong> Hartes Monatsbudget (z. B. 20 €) mit automatischer Benachrichtigung &amp; Stopp.
+            </div>
+          </article>
+
+          <!-- Szenario B -->
+          <article class="scenario-card scenario-b">
+            <div class="scenario-head">
+              <span class="tag-stage tag-voice">Szenario B • Maximale Ausbaustufe</span>
+              <h3>Stufe 2: Inkl. Voice- &amp; TTS-Hotline-Agent</h3>
+              <p class="scenario-price" id="costStage2Total">215,00 € <span>/ Monat</span></p>
+            </div>
+            <ul class="cost-breakdown" id="breakdownStage2">
+              <!-- Dynamisch befüllt -->
+            </ul>
+            <div class="scenario-footer">
+              <strong>Skalierungsvorteil:</strong> Keine festen Agenten-Lizenzen – Abrechnung sekundengenau nach Gesprächsdauer.
+            </div>
+          </article>
+        </div>
+
+        <!-- ROI & Break-Even Ergebnisbanner -->
+        <div class="roi-summary-grid">
+          <div class="roi-metric">
+            <span class="roi-title">Zeitersparnis im IT-Team</span>
+            <strong class="roi-number" id="savedHoursValue">133,3 Std. / Mon.</strong>
+            <span class="roi-sub" id="savedHoursDetail">Ø 5 Min. pro Ticket + 4 Min. pro Hotline-Call</span>
+          </div>
+          <div class="roi-metric">
+            <span class="roi-title">Monatliche Netto-Ersparnis</span>
+            <strong class="roi-number roi-positive" id="netSavingsValue">7.785 € / Mon.</strong>
+            <span class="roi-sub">Wertschöpfung abzüglich aller Azure-KI-Kosten</span>
+          </div>
+          <div class="roi-metric">
+            <span class="roi-title">Break-Even (Laufende Kosten)</span>
+            <strong class="roi-number" id="breakEvenTicketsValue">Ab dem 3. Ticket</strong>
+            <span class="roi-sub">Amortisation innerhalb der ersten Betriebsstunde</span>
+          </div>
+          <div class="roi-metric">
+            <span class="roi-title">Amortisation Einrichtung (~16 Std.)</span>
+            <strong class="roi-number" id="setupPaybackValue">Nach ca. 4 Tagen</strong>
+            <span class="roi-sub">Einmaliger Aufbau (~960 € interner Aufwand)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>
+        Enterprise KI-Architektur • Microsoft Azure EU Data Zone (Sweden Central / Germany West Central) • Freshservice Integration
+      </p>
+    </div>
+  </footer>
+
+  <!-- Echtes Modal-Fenster für Knoten & Verbindungen -->
+  <div id="infoModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <span id="modalCategory" class="modal-badge">System-Komponente</span>
+          <h2 id="modalTitle">Titel</h2>
+        </div>
+        <button id="modalCloseBtn" class="modal-close" type="button" aria-label="Fenster schließen">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-section">
+          <h3>1. Was passiert hier? (Management-Kurzfassung)</h3>
+          <p id="modalWhat"></p>
+        </div>
+
+        <div class="modal-section">
+          <h3>2. Wo wird es eingestellt? (System &amp; Menüpfad)</h3>
+          <div id="modalWhere" class="location-box"></div>
+        </div>
+
+        <div class="modal-section">
+          <h3>3. Wie muss es konfiguriert werden? (Checkliste der Einstellungen)</h3>
+          <ul id="modalHow" class="checklist"></ul>
+        </div>
+
+        <div class="modal-section security-callout">
+          <h3>4. Sicherheit &amp; Datenschutz (DSGVO)</h3>
+          <p id="modalSecurity"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
