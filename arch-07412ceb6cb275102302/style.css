@@ -990,3 +990,165 @@ body {
   .map-viewport { height: 540px; }
   .scenarios-grid, .detail-grid-2 { grid-template-columns: 1fr; }
 }
+/* =========================================================================
+   RESPONSIVE & MOBILE OPTIMIERUNG (TABLET & SMARTPHONE)
+   ========================================================================= */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.map-viewport {
+  touch-action: none;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 24px;
+  }
+  .map-viewport {
+    height: 620px;
+  }
+  .scenarios-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+  .container {
+    padding: 0 16px;
+  }
+  .header-inner {
+    height: auto;
+    min-height: 58px;
+    padding: 10px 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .brand-divider,
+  .brand-sub {
+    display: none;
+  }
+  .header-nav {
+    gap: 16px;
+    width: 100%;
+    justify-content: flex-start;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+  .header-nav a {
+    font-size: 0.86rem;
+  }
+  .page-intro {
+    padding: 32px 0 28px;
+  }
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .summary-card {
+    padding: 16px;
+  }
+  .summary-value {
+    font-size: 1.32rem;
+  }
+  .governance-panel {
+    padding: 20px 18px;
+  }
+  .stage-item summary {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 13px 15px;
+  }
+  .stage-title {
+    flex-basis: 100%;
+    order: 3;
+    font-size: 0.92rem;
+  }
+  .stage-chevron {
+    margin-left: auto;
+  }
+  .frame-toolbar {
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .legend-group {
+    gap: 12px;
+  }
+  .zoom-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .tool-btn {
+    min-width: 38px;
+    height: 36px;
+  }
+  .map-viewport {
+    height: 440px;
+  }
+  .viewport-caption {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    text-align: center;
+    font-size: 0.74rem;
+  }
+  .interfaces-directory {
+    padding: 18px 16px;
+  }
+  .interfaces-grid {
+    grid-template-columns: 1fr;
+  }
+  .finops-frame {
+    padding: 20px 16px;
+  }
+  .controls-row,
+  .scenarios-grid,
+  .roi-grid,
+  .detail-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .scenario-box {
+    padding: 18px 16px;
+  }
+  .cost-item-btn {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .cost-item-right {
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border);
+  }
+  .modal-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .modal-window {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    border-bottom: none;
+  }
+  .modal-header {
+    padding: 18px 20px;
+  }
+  .modal-header h2 {
+    font-size: 1.18rem;
+  }
+  .modal-body {
+    padding: 20px 20px 28px;
+  }
+}
+
+@media (max-width: 460px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

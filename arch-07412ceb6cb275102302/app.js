@@ -1055,3 +1055,77 @@ flowchart LR
     });
   });
 })();
+/* =========================================================================
+   TOUCH-UNTERSTÜTZUNG FÜR SMARTPHONE & TABLET (PAN & PINCH-TO-ZOOM)
+   ========================================================================= */
+(function () {
+  const vp = document.getElementById("mapViewport");
+  const cv = document.getElementById("mapCanvas");
+  const lbl = document.getElementById("zoomLevelLabel");
+  if (!vp || !cv) return;
+
+  let touchMode = null;
+  let lastX = 0;
+  let lastY = 0;
+  let lastDist = 0;
+
+  function parseTransform() {
+    const m = (cv.style.transform || "").match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)\s*scale\(([-\d.]+)\)/);
+    if (!m) return { x: 16, y: 20, s: 0.9 };
+    return { x: parseFloat(m[1]), y: parseFloat(m[2]), s: parseFloat(m[3]) };
+  }
+
+  function writeTransform(x, y, s) {
+    cv.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+    if (lbl) lbl.textContent = `${Math.round(s * 100)} %`;
+  }
+
+  vp.addEventListener("touchstart", function (e) {
+    if (e.touches.length === 1) {
+      touchMode = "pan";
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      touchMode = "pinch";
+      lastDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+
+  vp.addEventListener("touchmove", function (e) {
+    if (touchMode === "pan" && e.touches.length === 1) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - lastX;
+      const dy = e.touches[0].clientY - lastY;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      const cur = parseTransform();
+      writeTransform(cur.x + dx, cur.y + dy, cur.s);
+    } else if (touchMode === "pinch" && e.touches.length === 2) {
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (lastDist > 0) {
+        const cur = parseTransform();
+        const nextScale = Math.min(2.2, Math.max(0.35, cur.s * (dist / lastDist)));
+        writeTransform(cur.x, cur.y, nextScale);
+      }
+      lastDist = dist;
+    }
+  }, { passive: false });
+
+  vp.addEventListener("touchend", function () {
+    touchMode = null;
+    lastDist = 0;
+  });
+
+  if (window.innerWidth < 768) {
+    window.addEventListener("load", function () {
+      setTimeout(() => writeTransform(8, 12, 0.45), 250);
+    });
+  }
+})();
