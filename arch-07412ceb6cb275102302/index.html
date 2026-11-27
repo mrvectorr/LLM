@@ -3,256 +3,266 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IT-Servicedesk Automatisierung – Architektur &amp; Wirtschaftlichkeit</title>
+  <title>IT-Servicedesk Plattform – Systemarchitektur &amp; Wirtschaftlichkeit</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 </head>
 <body>
-  <header class="apple-nav">
-    <div class="container nav-inner">
-      <div class="nav-title">
-        <span class="nav-dot"></span>
-        <span>IT-Servicedesk Plattform • EU-Cloud Architektur</span>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="header-brand">
+        <span class="status-indicator"></span>
+        <span class="brand-name">IT-Servicedesk Plattform</span>
+        <span class="brand-divider">/</span>
+        <span class="brand-sub">Architektur- &amp; FinOps-Vorlage (EU Data Zone)</span>
       </div>
-      <nav class="nav-links">
+      <nav class="header-nav" aria-label="Hauptnavigation">
+        <a href="#betriebsmodus">Betriebsmodus</a>
         <a href="#architektur">Systemarchitektur</a>
-        <a href="#governance">Betriebsmodus</a>
         <a href="#finops">Kosten &amp; ROI</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <!-- Hero Bereich im Apple Stil -->
-    <section class="hero">
-      <p class="eyebrow">Entscheidungsvorlage • IT-Leitung &amp; Geschäftsführung</p>
-      <h1>Intelligente Ticket-Voranalyse &amp; Wissensautomatisierung.</h1>
-      <p class="hero-sub">
-        Nahtlose Integration von <strong>Freshservice</strong>, <strong>Microsoft 365</strong> und <strong>Microsoft Azure (EU Data Zone)</strong>.
-        Entwickelt für maximale Datensicherheit, volle Kostenkontrolle und spürbare Entlastung im IT-Alltag.
+    <!-- Titelbereich -->
+    <section class="page-intro">
+      <div class="intro-meta">Entscheidungsvorlage • IT-Leitung &amp; Geschäftsführung</div>
+      <h1>Automatisierte Ticket-Voranalyse &amp; Wissensmanagement im IT-Servicedesk</h1>
+      <p class="intro-lead">
+        Integrierte Enterprise-Architektur auf Basis von <strong>Freshservice ITSM</strong>, <strong>Microsoft 365</strong> und <strong>Microsoft Azure (EU Data Zone)</strong>.
+        Konzipiert für strikte DSGVO-Konformität, volle Kostentransparenz und nahtlose Unterstützung des Support-Teams.
       </p>
 
-      <div class="hero-kpis">
-        <div class="hero-kpi">
-          <span class="kpi-caption">Betriebskosten Stufe 1</span>
-          <strong class="kpi-num">9 € – 18 €</strong>
-          <span class="kpi-sub">pro Monat (bei 1.000 Tickets)</span>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-label">Laufende Cloud-Kosten (Stufe 1)</span>
+          <strong class="summary-value">9 € – 18 €</strong>
+          <span class="summary-detail">pro Monat bei 1.000 Tickets (Pay-as-you-go)</span>
         </div>
-        <div class="hero-kpi">
-          <span class="kpi-caption">Ausbaustufe 2 (Voice &amp; TTS)</span>
-          <strong class="kpi-num">140 € – 290 €</strong>
-          <span class="kpi-sub">pro Monat (inkl. Echtzeit-Telefonie)</span>
+        <div class="summary-card">
+          <span class="summary-label">Ausbaustufe 2 (Voice &amp; TTS)</span>
+          <strong class="summary-value">140 € – 290 €</strong>
+          <span class="summary-detail">pro Monat inkl. Echtzeit-Telefonie &amp; Speech</span>
         </div>
-        <div class="hero-kpi">
-          <span class="kpi-caption">Datenstandort &amp; DSGVO</span>
-          <strong class="kpi-num">100 % EU</strong>
-          <span class="kpi-sub">Sweden Central • Kein Modell-Training</span>
+        <div class="summary-card">
+          <span class="summary-label">Datenresidenz &amp; Compliance</span>
+          <strong class="summary-value">100 % EU-Region</strong>
+          <span class="summary-detail">Sweden Central • Kein Modell-Training</span>
         </div>
-        <div class="hero-kpi">
-          <span class="kpi-caption">Freigabeprinzip</span>
-          <strong class="kpi-num">Human-in-the-Loop</strong>
-          <span class="kpi-sub">Jederzeit schrittweise erweiterbar</span>
+        <div class="summary-card">
+          <span class="summary-label">Freigabe- &amp; Kontrollmodell</span>
+          <strong class="summary-value">Human-in-the-Loop</strong>
+          <span class="summary-detail">Schrittweise auf Teilautomation erweiterbar</span>
         </div>
       </div>
     </section>
 
-    <!-- Governance & Human-in-the-Loop Hinweis -->
-    <section id="governance" class="governance-banner">
-      <div class="gov-icon" aria-hidden="true">🛡️</div>
-      <div class="gov-content">
-        <div class="gov-header">
-          <h2>Aktueller Betriebsmodus: 100 % Human-in-the-Loop (Schrittweise erweiterbar)</h2>
-          <span class="status-pill">Stufe 1 Sicherheitsstandard</span>
-        </div>
+    <!-- Betriebsmodus & Governance -->
+    <section id="betriebsmodus" class="governance-panel">
+      <div class="gov-badge-col">
+        <span class="gov-tag">Betriebsmodus Stufe 1</span>
+      </div>
+      <div class="gov-text-col">
+        <h2>Kontrollierter Einstieg: 100 % Human-in-the-Loop (Schrittweise erweiterbar)</h2>
         <p>
-          In der aktuellen Ausbaustufe arbeitet das System ausschließlich unterstützend im Hintergrund:
-          Es versendet <strong>keine automatischen E-Mails an Endanwender</strong>, schließt <strong>keine Tickets selbstständig</strong> und veröffentlicht <strong>keine ungeprüften Wiki-Artikel</strong>.
-          Alle KI-Analysen landen als interne Notiz im Ticket und neue Lösungsartikel als Entwurf (Draft).
-          <strong>Ausblick:</strong> Sobald sich das System im Alltag bewährt hat, lässt sich der Automatisierungsgrad für ausgewählte Standardfälle (z. B. Passwort-Infos oder Software-Bestellungen) jederzeit gezielt erweitern.
+          In der aktuellen Ausbaustufe agiert die Plattform ausschließlich als technisches Assistenzsystem für IT-Mitarbeiter.
+          Es werden <strong>keine automatischen E-Mails an Endanwender versendet</strong>, <strong>keine Tickets eigenständig geschlossen</strong> und <strong>keine ungeprüften Wiki-Artikel veröffentlicht</strong>.
+          Sämtliche Analysen und Antwortentwürfe werden ausschließlich als interne Notiz (<em>Private Note</em>) im Ticket abgelegt; neue Lösungsartikel entstehen strikt als Entwurf (<em>Draft</em>).
+          <strong>Erweiterbarkeit:</strong> Nach erfolgreicher Einführungsphase können klar abgegrenzte Standardvorgänge (z. B. Passwort-Rücksetz-Anleitungen oder Standard-Software-Freigaben) gezielt für teil- oder vollautomatisierte Abläufe freigeschaltet werden.
         </p>
       </div>
     </section>
 
-    <!-- Sektion 1: Große interaktive Google-Maps-artige Architektur-Karte -->
-    <section id="architektur" class="apple-section">
-      <div class="section-top">
+    <!-- Sektion 1: Große interaktive Systemarchitektur -->
+    <section id="architektur" class="content-section">
+      <div class="section-heading">
         <div>
-          <p class="eyebrow">Systemlandschaft &amp; Tool-Stack</p>
-          <h2>Interaktive Architektur-Karte</h2>
-          <p class="section-lead">
-            Verschieben Sie die Karte per Maus (wie bei Google Maps) und zoomen Sie hinein.
-            <strong>Klicken Sie auf einen Baustein oder eine Verbindung</strong>, um die eingesetzten Tools, den Einrichtungsort und die Sicherheitsregeln im Detail anzuzeigen.
+          <span class="section-kicker">01 • Systemlandschaft &amp; Technische Integration</span>
+          <h2>Interaktive Systemarchitektur</h2>
+          <p class="section-subtitle">
+            Ziehen Sie die Karte per Maus zur Navigation und nutzen Sie das Mausrad oder die Steuerungsbuttons zum Zoomen.
+            <strong>Klicken Sie auf einen System-Baustein oder eine Schnittstelle</strong>, um die genauen Tools, technischen Parameter und Sicherheitsmechanismen einzusehen.
           </p>
         </div>
       </div>
 
-      <div class="map-card">
-        <!-- Karten-Werkzeugleiste -->
-        <div class="map-toolbar">
-          <div class="map-legend">
-            <span class="legend-item"><i class="dot dot-fs"></i>Freshservice &amp; M365</span>
-            <span class="legend-item"><i class="dot dot-az"></i>Azure AI &amp; Serverless</span>
-            <span class="legend-item"><i class="dot dot-sec"></i>Wissen, Bing &amp; Security</span>
-            <span class="legend-item"><i class="dot dot-voice"></i>Ausbaustufe 2 (Voice)</span>
+      <div class="architecture-frame">
+        <div class="frame-toolbar">
+          <div class="legend-group">
+            <span class="legend-item"><i class="swatch swatch-fs"></i>Freshservice &amp; M365</span>
+            <span class="legend-item"><i class="swatch swatch-az"></i>Azure AI &amp; Serverless</span>
+            <span class="legend-item"><i class="swatch swatch-sec"></i>Wissen, Bing &amp; Security</span>
+            <span class="legend-item"><i class="swatch swatch-voice"></i>Ausbaustufe 2 (Voice)</span>
           </div>
-          <div class="map-controls" role="group" aria-label="Kartensteuerung">
-            <button id="zoomOutBtn" type="button" class="map-btn" title="Herauszoomen">−</button>
-            <span id="zoomLevelLabel" class="zoom-readout">100 %</span>
-            <button id="zoomInBtn" type="button" class="map-btn" title="Hineinzoomen">+</button>
-            <button id="zoomResetBtn" type="button" class="map-btn map-btn-text" title="Ansicht zentrieren">Zentrieren</button>
+          <div class="zoom-controls" role="group" aria-label="Kartensteuerung">
+            <button id="zoomOutBtn" type="button" class="tool-btn" title="Herauszoomen">−</button>
+            <span id="zoomLevelLabel" class="zoom-value">100 %</span>
+            <button id="zoomInBtn" type="button" class="tool-btn" title="Hineinzoomen">+</button>
+            <button id="zoomResetBtn" type="button" class="tool-btn tool-btn-wide" title="Ansicht zurücksetzen">Ansicht zentrieren</button>
           </div>
         </div>
 
-        <!-- Interaktive Viewport-Bühne (Pan & Zoom) -->
         <div id="mapViewport" class="map-viewport" tabindex="0" aria-label="Verschiebbare Architekturkarte">
           <div id="mapCanvas" class="map-canvas">
             <div id="mermaidContainer" class="mermaid-container"></div>
           </div>
-          <div class="map-hint">🖱️ Ziehen zum Verschieben • Mausrad / + − zum Zoomen • Klick auf Kasten oder Pfeil für Details</div>
+          <div class="viewport-caption">Maus ziehen zum Verschieben • Mausrad zum Zoomen • Klick auf Baustein oder Verbindung für technische Details</div>
         </div>
 
-        <!-- Direktwahl für alle Schnittstellen & Datenflüsse -->
-        <div class="matrix-area">
-          <h3>Schnittstellen &amp; Datenflüsse im Überblick (Klick für Details &amp; Konfiguration)</h3>
-          <div id="edgeButtonsGrid" class="edge-grid"></div>
+        <div class="interfaces-directory">
+          <h3>Schnittstellen- &amp; Datenfluss-Verzeichnis (Direktauswahl für technische Details)</h3>
+          <div id="edgeButtonsGrid" class="interfaces-grid"></div>
         </div>
       </div>
     </section>
 
-    <!-- Sektion 2: Wirtschaftlichkeit, Einzelkosten & ROI-Simulator -->
-    <section id="finops" class="apple-section">
-      <div class="section-top">
+    <!-- Sektion 2: Wirtschaftlichkeit, Einzelkosten & ROI -->
+    <section id="finops" class="content-section">
+      <div class="section-heading">
         <div>
-          <p class="eyebrow">FinOps &amp; Wirtschaftlichkeit</p>
-          <h2>Kosten-Simulator, Einzelpositionen &amp; Break-Even</h2>
-          <p class="section-lead">
-            Passen Sie Ticketvolumen, Hotline-Anrufe und Stundensatz an.
-            <strong>Klicken Sie auf eine beliebige Kostenposition</strong>, um die genaue Berechnung, das Lizenzmodell und die Einstellung im Detail zu sehen.
+          <span class="section-kicker">02 • FinOps &amp; Wirtschaftlichkeitsrechnung</span>
+          <h2>Kosten-Simulator, Einzelpositionen &amp; Amortisation</h2>
+          <p class="section-subtitle">
+            Simulieren Sie Ticketvolumen, Hotline-Aufkommen und internen Stundensatz.
+            <strong>Klicken Sie auf jede einzelne Kostenposition</strong>, um Tarifgrundlage, Token-Verbrauch, Lizenzmodell und Konfigurationsort im Detail zu prüfen.
           </p>
         </div>
       </div>
 
-      <div class="finops-card">
-        <!-- Interaktive Schieberegler -->
-        <div class="sliders-grid">
-          <div class="slider-box">
-            <div class="slider-header">
-              <span>Monatliche IT-Tickets (Stufe 1)</span>
+      <div class="finops-frame">
+        <div class="controls-row">
+          <div class="control-card">
+            <div class="control-top">
+              <span>Monatliches Ticketvolumen (Stufe 1)</span>
               <strong id="ticketCountLabel">1.000 Tickets</strong>
             </div>
             <input type="range" id="ticketSlider" min="250" max="5000" step="250" value="1000" />
-            <div class="slider-scale"><span>250</span><span>1.000</span><span>2.500</span><span>5.000</span></div>
+            <div class="control-ticks"><span>250</span><span>1.000</span><span>2.500</span><span>5.000</span></div>
           </div>
 
-          <div class="slider-box">
-            <div class="slider-header">
+          <div class="control-card">
+            <div class="control-top">
               <span>Hotline-Anrufe (Ausbaustufe 2 Voice/TTS)</span>
               <strong id="callCountLabel">750 Anrufe</strong>
             </div>
             <input type="range" id="callSlider" min="0" max="3000" step="250" value="750" />
-            <div class="slider-scale"><span>0 (Nur Text)</span><span>750</span><span>1.500</span><span>3.000</span></div>
+            <div class="control-ticks"><span>0 (Nur Text)</span><span>750</span><span>1.500</span><span>3.000</span></div>
           </div>
 
-          <div class="slider-box">
-            <div class="slider-header">
-              <span>Interner IT-Stundensatz</span>
+          <div class="control-card">
+            <div class="control-top">
+              <span>Interner IT-Stundensatz (Vollkosten)</span>
               <strong id="rateLabel">60 € / Std.</strong>
             </div>
             <input type="range" id="rateSlider" min="45" max="90" step="5" value="60" />
-            <div class="slider-scale"><span>45 €</span><span>60 €</span><span>75 €</span><span>90 €</span></div>
+            <div class="control-ticks"><span>45 €</span><span>60 €</span><span>75 €</span><span>90 €</span></div>
           </div>
         </div>
 
-        <!-- Zwei Szenarien mit klickbaren Einzelpositionen -->
-        <div class="scenarios-wrap">
+        <div class="scenarios-grid">
           <!-- Szenario A -->
-          <article class="cost-column">
-            <div class="col-head">
-              <span class="col-badge">Szenario A • Aktueller Einstieg</span>
+          <article class="scenario-box">
+            <div class="scenario-top">
+              <span class="scenario-tag">Szenario A • Aktueller Einstieg</span>
               <h3>Stufe 1: Ticket-, Wissens- &amp; Doku-Automatisierung</h3>
-              <div class="big-price" id="costStage1Total">13,50 € <span>/ Monat (Zusatzkosten)</span></div>
+              <div class="scenario-total" id="costStage1Total">13,50 € <span>/ Monat (Zusatzkosten)</span></div>
             </div>
-            <p class="col-hint">Klicken Sie auf eine Kostenposition für Details &amp; Konfiguration:</p>
-            <div class="cost-items" id="breakdownStage1"></div>
-            <div class="col-note">
-              <strong>Kostendeckel (FinOps):</strong> Technisches Budgetlimit in Azure (z. B. 20 €/Monat) verhindert unerwartete Mehrkosten zuverlässig.
+            <p class="scenario-instruction">Einzelposition anklicken für technische &amp; kaufmännische Details:</p>
+            <div class="position-list" id="breakdownStage1"></div>
+            <div class="scenario-footnote">
+              <strong>FinOps-Kostenschutz:</strong> Technisches Monatsbudget in Azure Cost Management (z. B. 20 €/Monat) mit automatischer Schwellenwert-Benachrichtigung.
             </div>
           </article>
 
           <!-- Szenario B -->
-          <article class="cost-column col-voice">
-            <div class="col-head">
-              <span class="col-badge badge-voice">Szenario B • Maximale Ausbaustufe</span>
-              <h3>Stufe 2: Inkl. KI-Telefonhotline (Voice STT &amp; Neural TTS)</h3>
-              <div class="big-price" id="costStage2Total">215,00 € <span>/ Monat (Gesamtkosten)</span></div>
+          <article class="scenario-box">
+            <div class="scenario-top">
+              <span class="scenario-tag scenario-tag-alt">Szenario B • Maximale Ausbaustufe</span>
+              <h3>Stufe 2: Inkl. KI-Telefonhotline (Speech STT &amp; Neural TTS)</h3>
+              <div class="scenario-total" id="costStage2Total">215,00 € <span>/ Monat (Gesamtkosten)</span></div>
             </div>
-            <p class="col-hint">Klicken Sie auf eine Kostenposition für Details &amp; Konfiguration:</p>
-            <div class="cost-items" id="breakdownStage2"></div>
-            <div class="col-note">
-              <strong>Volle Flexibilität:</strong> Abrechnung sekundengenau nach tatsächlicher Gesprächsdauer (Ø 4 Min./Anruf) ohne feste Agenten-Lizenzen.
+            <p class="scenario-instruction">Einzelposition anklicken für technische &amp; kaufmännische Details:</p>
+            <div class="position-list" id="breakdownStage2"></div>
+            <div class="scenario-footnote">
+              <strong>Verbrauchsmodell:</strong> Sekundengenaue Abrechnung nach Gesprächsdauer (Ø 4 Min./Anruf) ohne feste Callcenter-Agentenlizenzen.
             </div>
           </article>
         </div>
 
-        <!-- ROI & Break-Even Kennzahlen -->
-        <div class="roi-bar">
-          <div class="roi-tile">
-            <span class="roi-lbl">Entlastung IT-Team</span>
-            <strong class="roi-val" id="savedHoursValue">133,3 Std. / Mon.</strong>
-            <span class="roi-desc" id="savedHoursDetail">Ø 5 Min./Ticket + 4 Min./Anruf</span>
+        <div class="roi-grid">
+          <div class="roi-card">
+            <span class="roi-kicker">Kapazitätsgewinn IT-Team</span>
+            <strong class="roi-figure" id="savedHoursValue">133,3 Std. / Mon.</strong>
+            <span class="roi-caption" id="savedHoursDetail">Ø 5 Min./Ticket + 4 Min./Anruf</span>
           </div>
-          <div class="roi-tile">
-            <span class="roi-lbl">Monatliche Netto-Ersparnis</span>
-            <strong class="roi-val val-green" id="netSavingsValue">7.785 € / Mon.</strong>
-            <span class="roi-desc">Zeitwert abzüglich aller laufenden Cloud-Kosten</span>
+          <div class="roi-card">
+            <span class="roi-kicker">Monatliche Netto-Ersparnis</span>
+            <strong class="roi-figure roi-accent" id="netSavingsValue">7.785 € / Mon.</strong>
+            <span class="roi-caption">Zeitwert abzüglich aller laufenden Cloud-Kosten</span>
           </div>
-          <div class="roi-tile">
-            <span class="roi-lbl">Break-Even (Laufende Kosten)</span>
-            <strong class="roi-val" id="breakEvenTicketsValue">Ab dem 3. Ticket</strong>
-            <span class="roi-desc">Amortisation in der ersten Betriebsstunde</span>
+          <div class="roi-card">
+            <span class="roi-kicker">Break-Even (Laufende Kosten)</span>
+            <strong class="roi-figure" id="breakEvenTicketsValue">Ab dem 3. Ticket</strong>
+            <span class="roi-caption">Amortisation innerhalb der ersten Betriebsstunde</span>
           </div>
-          <div class="roi-tile">
-            <span class="roi-lbl">Amortisation Aufbau (~16 Std.)</span>
-            <strong class="roi-val" id="setupPaybackValue">Nach ca. 4 Tagen</strong>
-            <span class="roi-desc">Einmalige Einrichtung (~960 € interner Aufwand)</span>
+          <div class="roi-card">
+            <span class="roi-kicker">Amortisation Einrichtung (~16 Std.)</span>
+            <strong class="roi-figure" id="setupPaybackValue">Nach ca. 4 Tagen</strong>
+            <span class="roi-caption">Einmalige Implementierung (~960 € interner Aufwand)</span>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="apple-footer">
+  <footer class="site-footer">
     <div class="container">
       <p>Enterprise IT-Architektur • Microsoft Azure (EU Data Zone) • Freshservice &amp; Microsoft 365 Integration</p>
     </div>
   </footer>
 
-  <!-- Zentrales Detail-Modal für Bausteine, Verbindungen & Kostenpositionen -->
-  <div id="infoModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
-    <div class="modal-sheet">
-      <div class="modal-top">
+  <!-- Reinweißes, großzügiges Detail-Modal -->
+  <div id="infoModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-window">
+      <div class="modal-header">
         <div>
-          <span id="modalCategory" class="modal-pill">Details</span>
+          <span id="modalCategory" class="modal-eyebrow">Technische Spezifikation</span>
           <h2 id="modalTitle">Titel</h2>
         </div>
-        <button id="modalCloseBtn" class="modal-x" type="button" aria-label="Schließen">&times;</button>
+        <button id="modalCloseBtn" class="modal-close" type="button" aria-label="Dialog schließen">&times;</button>
       </div>
-      <div class="modal-content">
-        <div class="m-block">
-          <h3>1. Was passiert hier &amp; welche Tools werden genutzt?</h3>
+      <div class="modal-body">
+        <div class="detail-group">
+          <h3>1. Fachliche Aufgabe &amp; Nutzen</h3>
           <p id="modalWhat"></p>
         </div>
-        <div class="m-block">
-          <h3>2. Wo wird es eingerichtet &amp; verwaltet?</h3>
-          <div id="modalWhere" class="where-pill"></div>
+
+        <div class="detail-grid-2">
+          <div class="detail-group">
+            <h3>2. Eingesetzte Tools &amp; Dienste</h3>
+            <div id="modalTools" class="spec-box"></div>
+          </div>
+          <div class="detail-group">
+            <h3>3. Konfigurationsort (System &amp; Pfad)</h3>
+            <div id="modalWhere" class="spec-box"></div>
+          </div>
         </div>
-        <div class="m-block">
-          <h3>3. Wie ist es konfiguriert / wie setzen sich die Kosten zusammen?</h3>
-          <ul id="modalHow" class="apple-list"></ul>
+
+        <div class="detail-group">
+          <h3>4. Technische Umsetzung &amp; Parameter im Detail</h3>
+          <ul id="modalHow" class="spec-list"></ul>
         </div>
-        <div class="m-block sec-box">
-          <h3>4. Sicherheit, Compliance &amp; Datenschutz (DSGVO)</h3>
-          <p id="modalSecurity"></p>
+
+        <div class="detail-grid-2">
+          <div class="detail-group security-panel">
+            <h3>5. Datenschutz, Rechte &amp; Compliance (DSGVO)</h3>
+            <p id="modalSecurity"></p>
+          </div>
+          <div class="detail-group evolution-panel">
+            <h3>6. Betriebsmodus &amp; Ausbaupotenzial</h3>
+            <p id="modalEvolution"></p>
+          </div>
         </div>
       </div>
     </div>
