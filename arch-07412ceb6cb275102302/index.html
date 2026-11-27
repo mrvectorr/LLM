@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IT-Servicedesk Plattform – Systemarchitektur &amp; Wirtschaftlichkeit</title>
+  <title>IT-Servicedesk Bot – Systemarchitektur &amp; Wirtschaftlichkeit</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 </head>
@@ -12,12 +12,12 @@
     <div class="container header-inner">
       <div class="header-brand">
         <span class="status-indicator" aria-hidden="true"></span>
-        <span class="brand-name">IT-Servicedesk Plattform</span>
+        <span class="brand-name">IT-Servicedesk Bot</span>
         <span class="brand-divider">/</span>
-        <span class="brand-sub">Architektur-, Sicherheits- &amp; FinOps-Vorlage (EU Data Zone)</span>
+        <span class="brand-sub">100 % Azure PaaS &amp; Serverless • EU Data Zone</span>
       </div>
       <nav class="header-nav" aria-label="Hauptnavigation">
-        <a href="#betriebsmodus">Betriebsmodus</a>
+        <a href="#betriebsmodus">Stufenmodell</a>
         <a href="#architektur">Systemarchitektur</a>
         <a href="#finops">Kosten &amp; ROI</a>
       </nav>
@@ -27,18 +27,22 @@
   <main class="container">
     <!-- Titelbereich -->
     <section class="page-intro">
-      <div class="intro-meta">Entscheidungsvorlage • IT-Leitung &amp; Geschäftsführung</div>
-      <h1>Automatisierte Ticket-Voranalyse &amp; Wissensmanagement im IT-Servicedesk</h1>
+      <h1>IT-Servicedesk Bot</h1>
       <p class="intro-lead">
-        Integrierte Enterprise-Architektur auf Basis von <strong>Freshservice ITSM</strong>, <strong>Microsoft 365</strong> und <strong>Microsoft Azure (EU Data Zone)</strong>.
-        Konzipiert für strikte DSGVO-Konformität, volle Kostentransparenz und spürbare Entlastung im IT-Alltag.
+        Automatisierte Ticket-Voranalyse, Wissensrecherche und Dokumentationspflege auf Basis von <strong>Freshservice ITSM</strong>, <strong>Microsoft 365</strong> und <strong>Microsoft Azure (100 % PaaS / Serverless in der EU Data Zone)</strong>.
+        Die eingesetzten Azure-GPT-Modelle sind bereits durch den bestehenden <strong>Microsoft Tenant-AVV</strong> abgeprüft, die Architektur benötigt <strong>keine lokale On-Prem-VM oder IaaS-Server</strong>, ist beliebig auf weitere Unternehmensbereiche erweiterbar und deutlich günstiger als externe APIs (wie z. B. Claude Code API).
       </p>
 
       <div class="summary-grid">
         <div class="summary-card">
+          <span class="summary-label">Betriebsmodus (Pilot)</span>
+          <strong class="summary-value">Human-in-the-Loop</strong>
+          <span class="summary-detail">Stufe 1 • Schrittweise auf Stufe 2 &amp; 3 erweiterbar</span>
+        </div>
+        <div class="summary-card">
           <span class="summary-label">Laufende Cloud-Kosten (Stufe 1)</span>
           <strong class="summary-value">9 € – 18 €</strong>
-          <span class="summary-detail">pro Monat bei 1.000 Tickets (Pay-as-you-go)</span>
+          <span class="summary-detail">pro Monat (100 % Azure PaaS • günstiger als Claude API)</span>
         </div>
         <div class="summary-card">
           <span class="summary-label">Ausbaustufe 2 (Voice &amp; TTS)</span>
@@ -46,31 +50,77 @@
           <span class="summary-detail">pro Monat inkl. Echtzeit-Telefonie &amp; Speech</span>
         </div>
         <div class="summary-card">
-          <span class="summary-label">Datenresidenz &amp; Compliance</span>
-          <strong class="summary-value">100 % EU-Region</strong>
-          <span class="summary-detail">Sweden Central • Kein Modell-Training</span>
-        </div>
-        <div class="summary-card">
-          <span class="summary-label">Freigabe- &amp; Kontrollmodell</span>
-          <strong class="summary-value">Human-in-the-Loop</strong>
-          <span class="summary-detail">Schrittweise auf Teilautomation erweiterbar</span>
+          <span class="summary-label">Hosting &amp; Compliance</span>
+          <strong class="summary-value">100 % Azure PaaS</strong>
+          <span class="summary-detail">Sweden Central • Durch Tenant-AVV abgeprüft</span>
         </div>
       </div>
     </section>
 
-    <!-- Betriebsmodus & Governance -->
+    <!-- Betriebsmodus & Klappbares 3-Stufen-Modell -->
     <section id="betriebsmodus" class="governance-panel">
-      <div class="gov-badge-col">
-        <span class="gov-tag">Betriebsmodus Stufe 1</span>
+      <div class="gov-header-row">
+        <div>
+          <span class="gov-tag">Pilot: Human-in-the-Loop</span>
+          <h2>Betriebsmodus, 3-Stufen-Ausbauplan &amp; Architektur-Vorteile</h2>
+          <p class="gov-intro">
+            Im <strong>Pilotbetrieb (Stufe 1)</strong> arbeitet der IT-Servicedesk Bot strikt unterstützend im Hintergrund: Es werden keine E-Mails an Endanwender gesendet, keine Tickets selbstständig geschlossen und keine ungeprüften Wiki-Artikel veröffentlicht.
+            Klicken Sie auf die einzelnen Ausbaustufen, um die Erweiterungsmöglichkeiten einzusehen:
+          </p>
+        </div>
       </div>
-      <div class="gov-text-col">
-        <h2>Kontrollierter Einstieg: 100 % Human-in-the-Loop (Schrittweise erweiterbar)</h2>
-        <p>
-          In der aktuellen Ausbaustufe agiert die Plattform ausschließlich als technisches Assistenzsystem für IT-Mitarbeiter.
-          Es werden <strong>keine automatischen E-Mails an Endanwender versendet</strong>, <strong>keine Tickets eigenständig geschlossen</strong> und <strong>keine ungeprüften Wiki-Artikel veröffentlicht</strong>.
-          Sämtliche Analysen und Antwortentwürfe werden ausschließlich als interne Notiz (<em>Private Note</em>) im Ticket abgelegt; neue Lösungsartikel entstehen strikt als Entwurf (<em>Draft</em>).
-          <strong>Erweiterbarkeit:</strong> Nach erfolgreicher Einführungsphase können klar abgegrenzte Standardvorgänge (z. B. Passwort-Rücksetz-Anleitungen oder Standard-Software-Freigaben) gezielt für teil- oder vollautomatisierte Abläufe freigeschaltet werden.
-        </p>
+
+      <div class="stages-accordion">
+        <details class="stage-item" open>
+          <summary>
+            <span class="stage-badge stage-active">Stufe 1 • Aktueller Pilot</span>
+            <span class="stage-title">Human-in-the-Loop Assistenz (Nur interne Notizen &amp; KB-Entwürfe)</span>
+            <span class="stage-chevron" aria-hidden="true">▾</span>
+          </summary>
+          <div class="stage-body">
+            <p>
+              <strong>Funktionsweise:</strong> Der Bot klassifiziert eingehende Tickets, prüft Pflichtfelder (z. B. Computernummer über die Freshservice CMDB), recherchiert Lösungen im internen SharePoint-Wiki sowie anonymisiert bei unbekannten Fehlercodes und hinterlegt eine strukturierte <strong>Private Note (interne Notiz)</strong> inkl. Antwortentwurf im Ticket.
+            </p>
+            <ul>
+              <li><strong>100 % Kontrolle durch IT-Mitarbeiter:</strong> Endanwender erhalten niemals ungeprüfte KI-Texte. Neue Wissensartikel nach Ticket-Abschluss werden ausschließlich als <em>Draft (Entwurf)</em> gespeichert.</li>
+              <li><strong>AVV &amp; Compliance-Sicherheit:</strong> Die eingesetzten Azure-GPT-Modelle (<code>gpt-4.1-mini</code> &amp; <code>gpt-4.1</code> in <em>Sweden Central</em>) sind bereits durch den bestehenden <strong>Microsoft Tenant-AVV</strong> rechtlich abgedeckt – ohne US-Datentransfer und ohne Modell-Training.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="stage-item">
+          <summary>
+            <span class="stage-badge">Stufe 2 • Erweiterung</span>
+            <span class="stage-title">Teilautomation für Standardfälle &amp; KI-Telefonhotline (Voice / TTS)</span>
+            <span class="stage-chevron" aria-hidden="true">▾</span>
+          </summary>
+          <div class="stage-body">
+            <p>
+              <strong>Funktionsweise:</strong> Nach bewährtem Pilotbetrieb können klar definierte Standardanfragen (z. B. Passwort-Reset-Anleitungen, VPN-Einrichtung, Standard-Software-Freigaben oder Rückfragen bei fehlender Computernummer) teilautomatisiert beantwortet werden. Optional ergänzt <strong>Azure AI Speech (STT &amp; Neural TTS)</strong> die telefonische IT-Hotline rund um die Uhr.
+            </p>
+            <ul>
+              <li><strong>Nahtlose Eskalation:</strong> Bei komplexen Störungen oder auf Wunsch des Anrufers übergibt der Bot sofort inklusive Gesprächsprotokoll an einen menschlichen Techniker.</li>
+              <li><strong>Sekundengenaue Abrechnung:</strong> Keine festen Callcenter-Agentenlizenzen – Kosten entstehen nur bei tatsächlichen Gesprächsminuten.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="stage-item">
+          <summary>
+            <span class="stage-badge">Stufe 3 • Skalierung</span>
+            <span class="stage-title">Vollautomation ausgewählter Workflows &amp; Rollout auf weitere Unternehmensbereiche</span>
+            <span class="stage-chevron" aria-hidden="true">▾</span>
+          </summary>
+          <div class="stage-body">
+            <p>
+              <strong>Funktionsweise:</strong> Für geprüfte Standardprozesse führt der Orchestrator freigegebene Aktionen (z. B. Gruppen-Zuweisungen, Lizenzvergabe oder Ticket-Abschluss nach Bestätigung) selbstständig aus. Gleichzeitig lässt sich dieselbe Plattform ohne neue Grundinfrastruktur auf <strong>weitere Unternehmensbereiche</strong> ausweiten:
+            </p>
+            <ul>
+              <li><strong>Übertragbar auf weitere Fachbereiche:</strong> HR / Personalwesen (Onboarding, Urlaubs-/Richtlinienfragen), Einkauf &amp; ERP-Support, Facility Management sowie Produktions-IT – jeweils mit eigenem, getrenntem Wissens-Index.</li>
+              <li><strong>Warum 100 % Azure PaaS/Serverless besser ist als eine lokale VM oder Claude API:</strong> Keine lokale On-Prem-VM oder IaaS-Server nötig (kein 24/7-Hardware-/OS-Patching, keine VM-Fixkosten von 45–90 €/Monat), 1 Mio. Function-Aufrufe/Monat dauerhaft gratis und deutlich geringere Token-Preise als z. B. die Claude Code API.</li>
+            </ul>
+          </div>
+        </details>
       </div>
     </section>
 
@@ -78,20 +128,20 @@
     <section id="architektur" class="content-section">
       <div class="section-heading">
         <div>
-          <span class="section-kicker">01 • Systemlandschaft &amp; Technische Integration</span>
+          <span class="section-kicker">01 • Systemlandschaft &amp; Hosting-Architektur (100 % Azure PaaS / Serverless)</span>
           <h2>Interaktive Systemarchitektur</h2>
           <p class="section-subtitle">
-            Ziehen Sie die Karte per Maus zur Navigation und nutzen Sie das Mausrad oder die Steuerungsbuttons zum Zoomen.
-            <strong>Klicken Sie auf einen System-Baustein oder eine Schnittstelle</strong>, um die genauen Tools, technischen Parameter, Sperrgrenzen und Sicherheitsmechanismen einzusehen.
+            Ziehen Sie die Karte per Maus zur Navigation, zoomen Sie hinein oder wechseln Sie in die <strong>Vollbild-Ansicht</strong>.
+            <strong>Klicken Sie auf einen System-Baustein oder eine Schnittstelle</strong>, um Tools, Admin-Steuerung, Sperrgrenzen, VM-Vergleich und Kosten im Detail einzusehen.
           </p>
         </div>
       </div>
 
-      <div class="architecture-frame">
+      <div id="architectureFrame" class="architecture-frame">
         <div class="frame-toolbar">
           <div class="legend-group">
             <span class="legend-item"><i class="swatch swatch-fs"></i>Freshservice &amp; M365</span>
-            <span class="legend-item"><i class="swatch swatch-az"></i>Azure AI &amp; Serverless</span>
+            <span class="legend-item"><i class="swatch swatch-az"></i>Azure AI &amp; Serverless (PaaS)</span>
             <span class="legend-item"><i class="swatch swatch-sec"></i>Wissen, Bing &amp; Security</span>
             <span class="legend-item"><i class="swatch swatch-voice"></i>Ausbaustufe 2 (Voice)</span>
           </div>
@@ -99,7 +149,8 @@
             <button id="zoomOutBtn" type="button" class="tool-btn" title="Herauszoomen">−</button>
             <span id="zoomLevelLabel" class="zoom-value">100 %</span>
             <button id="zoomInBtn" type="button" class="tool-btn" title="Hineinzoomen">+</button>
-            <button id="zoomResetBtn" type="button" class="tool-btn tool-btn-wide" title="Ansicht zurücksetzen">Ansicht zentrieren</button>
+            <button id="zoomResetBtn" type="button" class="tool-btn tool-btn-wide" title="Ansicht zentrieren">Zentrieren</button>
+            <button id="fullscreenBtn" type="button" class="tool-btn tool-btn-wide tool-btn-primary" title="Architektur im Vollbild öffnen">⛶ Vollbild</button>
           </div>
         </div>
 
@@ -107,7 +158,7 @@
           <div id="mapCanvas" class="map-canvas">
             <div id="mermaidContainer" class="mermaid-container"></div>
           </div>
-          <div class="viewport-caption">Maus ziehen zum Verschieben • Mausrad zum Zoomen • Klick auf Baustein oder Verbindung für technische Details</div>
+          <div class="viewport-caption">Maus ziehen zum Verschieben • Mausrad zum Zoomen • Vollbild oben rechts • Klick auf Baustein für Details</div>
         </div>
 
         <div class="interfaces-directory">
@@ -125,7 +176,7 @@
           <h2>Kosten-Simulator, Einzelpositionen &amp; Amortisation</h2>
           <p class="section-subtitle">
             Simulieren Sie Ticketvolumen, Hotline-Aufkommen und internen Stundensatz.
-            <strong>Klicken Sie auf jede einzelne Kostenposition</strong>, um Tarifgrundlage, Token-Verbrauch, Lizenzmodell und Konfigurationsort im Detail zu prüfen.
+            <strong>Klicken Sie auf jede einzelne Kostenposition</strong>, um Tarifgrundlage, Token-Verbrauch, Vergleich zu VMs/Claude API und Konfigurationsort im Detail zu prüfen.
           </p>
         </div>
       </div>
@@ -164,21 +215,21 @@
           <!-- Szenario A -->
           <article class="scenario-box">
             <div class="scenario-top">
-              <span class="scenario-tag">Szenario A • Aktueller Einstieg</span>
+              <span class="scenario-tag">Szenario A • Aktueller Pilot</span>
               <h3>Stufe 1: Ticket-, Wissens- &amp; Doku-Automatisierung</h3>
               <div class="scenario-total" id="costStage1Total">13,50 € <span>/ Monat (Zusatzkosten)</span></div>
             </div>
             <p class="scenario-instruction">Einzelposition anklicken für technische &amp; kaufmännische Details:</p>
             <div class="position-list" id="breakdownStage1"></div>
             <div class="scenario-footnote">
-              <strong>FinOps-Kostenschutz:</strong> Technisches Monatsbudget in Azure Cost Management (z. B. 20 €/Monat) mit automatischer Schwellenwert-Benachrichtigung.
+              <strong>FinOps-Kostenschutz:</strong> 100 % Azure PaaS/Serverless ohne laufende VM-Kosten; hartes Monatsbudget in Azure (z. B. 20 €/Monat) schützt vor Mehrkosten.
             </div>
           </article>
 
           <!-- Szenario B -->
           <article class="scenario-box">
             <div class="scenario-top">
-              <span class="scenario-tag scenario-tag-alt">Szenario B • Maximale Ausbaustufe</span>
+              <span class="scenario-tag scenario-tag-alt">Szenario B • Ausbaustufe 2</span>
               <h3>Stufe 2: Inkl. KI-Telefonhotline (Speech STT &amp; Neural TTS)</h3>
               <div class="scenario-total" id="costStage2Total">215,00 € <span>/ Monat (Gesamtkosten)</span></div>
             </div>
@@ -218,7 +269,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>Enterprise IT-Architektur • Microsoft Azure (EU Data Zone) • Freshservice &amp; Microsoft 365 Integration</p>
+      <p>IT-Servicedesk Bot • 100 % Microsoft Azure PaaS / Serverless (EU Data Zone) • Freshservice &amp; Microsoft 365 Integration</p>
     </div>
   </footer>
 
@@ -244,13 +295,13 @@
             <div id="modalTools" class="spec-box"></div>
           </div>
           <div class="detail-group">
-            <h3>3. Konfigurationsort (System &amp; Menüpfad)</h3>
+            <h3>3. Konfigurationsort &amp; Administration</h3>
             <div id="modalWhere" class="spec-box"></div>
           </div>
         </div>
 
         <div class="detail-group">
-          <h3>4. Technische Umsetzung &amp; Parameter im Detail</h3>
+          <h3>4. Technische Umsetzung, Hintergrund &amp; Architektur-Vergleich</h3>
           <ul id="modalHow" class="spec-list"></ul>
         </div>
 
@@ -261,11 +312,11 @@
 
         <div class="detail-grid-2">
           <div class="detail-group security-panel">
-            <h3>6. Datenschutz, Rechte &amp; Compliance (DSGVO)</h3>
+            <h3>6. Datenschutz, Tenant-AVV &amp; Compliance (DSGVO)</h3>
             <p id="modalSecurity"></p>
           </div>
           <div class="detail-group evolution-panel">
-            <h3>7. Betriebsmodus &amp; Ausbaupotenzial</h3>
+            <h3>7. Kosten dieses Bausteins &amp; Ausbaupotenzial</h3>
             <p id="modalEvolution"></p>
           </div>
         </div>

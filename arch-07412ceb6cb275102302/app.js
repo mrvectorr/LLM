@@ -9,16 +9,16 @@
       category: "Ticketsystem & Asset-CMDB • Freshservice",
       title: "Freshservice Queue „KI-Triage“ & Asset-CMDB",
       what:
-        "Zentraler Eingangspunkt für alle eingehenden IT-Störungen und Serviceanfragen. Neu erstellte Tickets werden über den Workflow Automator regelbasiert in die isolierte Warteschlange „KI-Triage“ geleitet. Parallel dazu stellt die integrierte CMDB (Configuration Management Database) Stammdaten zu Computernummern, Seriennummern und zugewiesenen Endgeräten bereit, sodass Hardware-Tickets ohne Rückfragen verifiziert werden können.",
+        "Zentraler Eingangspunkt für alle eingehenden IT-Störungen und Serviceanfragen. Neu erstellte Tickets werden über den Workflow Automator regelbasiert in die isolierte Warteschlange „KI-Triage“ geleitet. Parallel dazu stellt die integrierte CMDB (Configuration Management Database) Stammdaten zu Computernummern, Seriennummern und zugewiesenen Endgeräten bereit.",
       tools:
         "Freshservice ITSM • Workflow Automator • Freshservice REST API v2 (/api/v2/tickets, /assets, /notes, /solutions) • Integrierte Asset-CMDB",
       where:
-        "Freshservice Admin → Agentengruppen (Gruppe „KI-Triage“), Workflow Automator (Regel: Ticket-Erstellung) & Assets (CMDB)",
+        "Admin-Oberfläche: Freshservice Admin → Agentengruppen (Gruppe „KI-Triage“), Workflow Automator (Regel: Ticket-Erstellung) & Assets (CMDB)",
       how: [
-        "Dedizierte Agentengruppe „KI-Triage“ sowie einen eingeschränkten technischen Service-Account („KI-Assistent“) anlegen und die numerischen IDs in Azure Key Vault hinterlegen.",
-        "Workflow-Automator-Regel: Jedes neu eingehende Ticket ohne Opt-out-Tag („keine-ki“ oder „manuell“) wird sofort der Queue „KI-Triage“ zugewiesen.",
-        "Zweistufiger CMDB-Abgleich: Primäre Suche über im Text erkannte Asset-Tags (z. B. NB-4711, PC-1024, LAP-008); sekundärer Fallback über die requester_id des Meldenden.",
-        "Resiliente API-Anbindung: HTTP-Session mit automatischem Retry-Backoff bei Rate-Limits (HTTP 429) und festem Request-Timeout von 15 Sekunden."
+        "Hintergrund-Ablauf: Bei Ticket-Erstellung feuert der Workflow Automator einen HTTPS-Webhook mit ausschließlich der numerischen ticket_id an Azure Functions.",
+        "Dedizierte Agentengruppe „KI-Triage“ sowie einen eingeschränkten technischen Service-Account („KI-Assistent“) anlegen und die IDs im Azure Key Vault hinterlegen.",
+        "Zweistufiger CMDB-Abgleich: Primäre Suche über im Text erkannte Asset-Tags (z. B. NB-4711, PC-1024); sekundärer Fallback über die requester_id des Meldenden.",
+        "On-Premises-Bedarf: Keine lokale Hardware oder On-Premises-VM erforderlich – reine Cloud-zu-Cloud-Kommunikation."
       ],
       blocked: [
         "Keine öffentlichen Kundenantworten (Public Replies): Der Service-Account besitzt technisch keine Berechtigung, E-Mails an Endanwender zu versenden.",
@@ -26,35 +26,35 @@
         "Kein Überschreiben manueller Techniker-Zuweisungen: Sobald ein Kollege das Ticket öffnet oder übernimmt, bricht die Automation sofort ab."
       ],
       security:
-        "Transportverschlüsselung über TLS 1.3. Der Freshservice API-Schlüssel ist nicht im Quellcode hinterlegt, sondern hardwaregesichert im Azure Key Vault gespeichert und wird erst zur Laufzeit abgerufen.",
+        "Transportverschlüsselung über TLS 1.3. Der Freshservice API-Schlüssel ist nicht im Quellcode hinterlegt, sondern hardwaregesichert im Azure Key Vault gespeichert.",
       evolution:
-        "Aktuell reine Eingangsprüfung und interne Anreicherung. Später kann der Workflow Automator für definierte Service-Katalog-Items (z. B. Standard-Software-Pakete) automatische Genehmigungs- oder Bereitstellungsschritte anstoßen."
+        "Kosten dieses Bausteins: 0,00 € Zusatzkosten (Webhooks, REST API v2 & CMDB sind im bestehenden Freshservice-Tarif enthalten). Ausbaupotenzial: Später für Service-Katalog-Standardprozesse (Stufe 2/3) erweiterbar."
     },
 
     ORCHESTRATOR: {
-      category: "Steuerung, Guardrails & Audit • Azure Serverless",
-      title: "Serverless Orchestrator, Kollisionsschutz & PII-Filter",
+      category: "Steuerung, Guardrails & Audit • 100 % Azure PaaS / Serverless",
+      title: "Serverless Orchestrator & Kollisionsschutz (Azure Functions)",
       what:
-        "Deterministische Steuerungsschicht zwischen Freshservice und den KI-Agenten. Sie übernimmt das atomare Sperren (Claiming) eines Tickets während der Analyse, verhindert Überschneidungen mit menschlichen Technikern, bereinigt personenbezogene Daten vor externen Suchen und protokolliert jeden Vorgang revisionssicher inklusive Token- und Cent-Verbrauch.",
+        "Deterministische Steuerungsschicht zwischen Freshservice und den KI-Agenten. Übernimmt das atomare Sperren (Claiming) eines Tickets während der Analyse, verhindert Überschneidungen mit menschlichen Technikern, bereinigt personenbezogene Daten vor externen Suchen und protokolliert jeden Vorgang revisionssicher.",
       tools:
-        "Azure Functions (Linux, Python 3.11, Consumption Plan Y1) • Azure Key Vault (RBAC) • Azure Table Storage • Pydantic v2",
+        "Azure Functions (Linux, Python 3.11, Consumption Plan Y1 – 100 % PaaS) • Azure Key Vault (RBAC) • Azure Table Storage",
       where:
-        "Azure Portal → Ressourcengruppe rg-servicedesk-ai-prod → Function App (sdai-func-*) & Key Vault",
+        "Admin-Oberfläche: Azure Portal → Ressourcengruppe rg-servicedesk-ai-prod → Function App, Key Vault & Table Storage (Konfiguration per GitHub Actions)",
       how: [
-        "Pre-Flight-Kollisionsschutz: Die Verarbeitung startet nur, wenn responder_id leer ist, das Ticket in „KI-Triage“ liegt und die letzte Änderung mindestens 3 Minuten zurückliegt.",
-        "Atomares Claiming & Post-Flight-Check: Während der wenigen Sekunden Analyse wird der KI-Service-Account als Bearbeiter eingetragen; unmittelbar vor dem Schreiben der Notiz wird erneut geprüft, ob inzwischen ein Techniker übernommen hat.",
-        "Deterministischer PII-Sanitizer (Regex-Pipeline): Entfernt E-Mail-Adressen, IPv4-Adressen, Telefonnummern, Hostnamen (NB-/PC-/LAP-/SRV-*) und Grußformeln mit Klarnamen vor externen Aufrufen.",
-        "Revisionssicheres FinOps-Log: Jede Ausführung schreibt PartitionKey (YYYY-MM), Agentenname, Input-/Output-Tokens und exakte Cent-Kosten in Azure Table Storage."
+        "Warum keine lokale On-Prem-VM oder IaaS-VM? Eine lokale VM (z. B. n8n + lokales LLM) benötigt 24/7-Serverbetrieb, OS-/Docker-Patching, 32–64 GB RAM/GPU-Hardware sowie Firewall-Tunnel für Freshservice-Webhooks. Azure PaaS/Serverless läuft 24/7 wartungsfrei, skaliert automatisch und kostet 0,00 € Laufzeitgebühr.",
+        "Pre- & Post-Flight-Kollisionsschutz: Bearbeitung startet nur, wenn responder_id leer ist und die letzte manuelle Änderung mindestens 3 Minuten zurückliegt.",
+        "Deterministischer PII-Sanitizer: Entfernt E-Mail-Adressen, IP-Adressen, Telefonnummern, Hostnamen (NB-/PC-/LAP-*) und Klarnamen vor externen Aufrufen.",
+        "Admin-Alltag: Schwellenwerte werden über Azure App Settings gesteuert, Keys im Azure Key Vault rotiert und Token-Kosten in Azure Table Storage ausgewertet."
       ],
       blocked: [
         "Keine Klartext-Ticketinhalte in System-Logs: Application Insights protokolliert ausschließlich technische Statuscodes und Ticket-IDs ohne personenbezogene Daten.",
-        "Keine hartkodierten Passwörter oder API-Keys im Git-Repository: Ein automatisierter Gitleaks-Security-Scan blockiert jeden Push mit Geheimnissen.",
-        "Kein unkontrollierter Dauerlauf: Jede Function-Ausführung ist durch ein hartes Timeout (max. 5 Minuten) und Rate-Limits abgesichert."
+        "Keine hartkodierten Passwörter oder API-Keys im Git-Repository (blockiert durch automatisierten Gitleaks-Security-Scan).",
+        "Kein OS- oder Server-Wartungsstau: 100 % PaaS-Betrieb durch Microsoft ohne eigene virtuelle Maschinen."
       ],
       security:
         "Zero-Trust-Architektur: Authentifizierung zwischen allen Azure-Diensten erfolgt passwortlos über System-Assigned Managed Identity (DefaultAzureCredential) mit minimalen RBAC-Rollen.",
       evolution:
-        "Die Guardrail-Engine steuert zentral den Autonomiegrad. Über Konfigurations-Flags pro Ticket-Kategorie lassen sich einzelne Ticketarten schrittweise von „Nur interne Notiz“ auf „Teilautomatisierte Rückfrage“ umstellen."
+        "Kosten dieses Bausteins: 0,00 € / Monat (1 Mio. Ausführungen gratis im Consumption Plan; Key Vault & Table Storage ca. 0,15 €/Monat) gegenüber 45–90 €/Monat für eine IaaS-VM."
     },
 
     AGENT_1: {
@@ -63,12 +63,12 @@
       what:
         "Führt die strukturierte Erstklassifizierung jedes neuen Tickets in Echtzeit durch. Erkennt Problemkategorie, Dringlichkeit (Priorität 1–4) und zuständige IT-Fachgruppe und prüft bei Hardware-/Client-Meldungen, ob eine gültige Computernummer vorliegt oder über die CMDB ermittelt werden konnte.",
       tools:
-        "Azure AI Foundry Agent Service • Modell: gpt-4.1-mini (Data Zone Standard EU) • Function Calling (lookup_cmdb_asset)",
+        "Azure AI Foundry Agent Service (PaaS) • Modell: gpt-4.1-mini (Data Zone Standard EU) • CMDB-Abgleich",
       where:
-        "Azure AI Foundry Portal → Projekt Servicedesk (Sweden Central) → Agents → servicedesk-agent-1-triage",
+        "Admin-Oberfläche: Azure AI Foundry Portal (Sweden Central) & versionierte Prompt-Datei prompts/agent1_triage.md im Git-Repo",
       how: [
         "Modell-Konfiguration: gpt-4.1-mini mit Temperatur 0.0 (maximale Deterministik), Max-Tokens 400 und striktem JSON-Schema-Output.",
-        "Pflichtfeld-Validierung: Wird ein Client-/Hardware-Problem erkannt (is_pc_issue: true) und liegt weder im Text noch in der CMDB ein Gerät vor, setzt der Orchestrator das Tag „pflichtdaten-fehlen“ und stoppt die weitere KI-Recherche.",
+        "Pflichtfeld-Validierung: Wird ein Client-/Hardware-Problem erkannt und liegt weder im Text noch in der CMDB ein Gerät vor, setzt der Orchestrator das Tag „pflichtdaten-fehlen“ und stoppt die weitere KI-Recherche.",
         "Fachgruppen-Routing: Ordnet das Ticket automatisiert den Zielgruppen 1st-Level-Support, Client-Management, Netzwerk-Infra oder M365-Admin zu."
       ],
       blocked: [
@@ -77,58 +77,58 @@
         "Keine Bearbeitung von Opt-out-Tickets: Tickets mit dem Tag „keine-ki“ oder „manuell“ werden vollständig übersprungen."
       ],
       security:
-        "Verarbeitung ausschließlich innerhalb der EU Data Zone (Sweden Central). Microsoft speichert keine Prompts/Completions für Modell-Training (Zero-Data-Retention im Enterprise-Tarif).",
+        "Bereits durch den bestehenden Microsoft Tenant-AVV rechtlich abgedeckt. Verarbeitung ausschließlich in der EU Data Zone (Sweden Central) ohne Modell-Training.",
       evolution:
-        "Aktuell setzt Agent 1 Tags und Zielgruppen für das Support-Team. In einer nächsten Ausbaustufe kann bei fehlender Computernummer automatisiert eine standardisierte Rückfrage-Vorlage an den Meldenden versendet werden."
+        "Kosten dieses Bausteins: ca. 1,60 € / Monat bei 1.000 Tickets (~0,41 € pro 1 Mio. Input-Tokens – ein Bruchteil externer APIs wie Claude Code)."
     },
 
     AGENT_2: {
       category: "KI-Agent 2 • Azure AI Foundry (gpt-4.1)",
-      title: "Agent 2: Wissens- & Lösungs-Agent (Human-in-the-Loop)",
+      title: "Agent 2: Wissens- & Lösungs-Agent (Pilot: Human-in-the-Loop)",
       what:
         "Bereitet für den zuständigen IT-Techniker eine fundierte technische Voranalyse mit konkreten Prüfschritten vor. Kombiniert interne Wissensquellen (SharePoint-Wiki, Freshservice KB, historische gelöste Tickets) mit einer anonymisierten Hersteller-Recherche bei unbekannten Fehlercodes.",
       tools:
-        "Azure AI Foundry Agent Service • Modell: gpt-4.1 (Data Zone Standard EU) • Azure AI Search • Grounding with Bing Search",
+        "Azure AI Foundry Agent Service (PaaS) • Modell: gpt-4.1 (Data Zone Standard EU) • Azure AI Search • Grounding with Bing Search",
       where:
-        "Azure AI Foundry Portal → Projekt Servicedesk → Agents → servicedesk-agent-2-knowledge",
+        "Admin-Oberfläche: Azure AI Foundry Portal & versionierte Prompt-Datei prompts/agent2_knowledge.md",
       how: [
-        "Modell-Konfiguration: gpt-4.1 (EU Data Zone), Temperatur 0.1, Max-Tokens 1.200 mit aktiviertem Prompt Caching für den System-Prompt.",
+        "Modell-Konfiguration: gpt-4.1 (EU Data Zone), Temperatur 0.1, Max-Tokens 1.200 mit aktiviertem Prompt Caching (75 % Rabatt auf den System-Prompt).",
         "RAG-Priorisierung: Ruft zunächst die Top-5-Treffer aus Azure AI Search ab. Nur wenn der Relevanz-Score unter 0,78 liegt, wird eine anonymisierte Bing-Recherche ausgelöst.",
-        "Standardisierte HTML-Struktur der internen Notiz: 1. KI-Zusammenfassung, 2. Gefundene Wissensquellen, 3. Empfohlene Prüfungsschritte für Techniker, 4. Antwortentwurf für Endanwender."
+        "Struktur der internen Notiz: 1. KI-Zusammenfassung, 2. Gefundene Wissensquellen, 3. Prüfungsschritte für Techniker, 4. Antwortentwurf."
       ],
       blocked: [
-        "100 % Human-in-the-Loop-Sperre: Die Ausgabe wird über die API hart codiert mit „private: true“ gespeichert. Endanwender sehen KI-Notizen niemals direkt.",
+        "100 % Human-in-the-Loop-Sperre im Pilot (Stufe 1): Die Ausgabe wird über die API hart codiert mit „private: true“ gespeichert. Endanwender sehen KI-Notizen niemals ungeprüft.",
         "Kein Zugriff auf aktive Systemänderungen: Agent 2 führt keine PowerShell-Skripte, Passwort-Resets oder Active-Directory-Änderungen aus.",
-        "Keine Weitergabe interner Daten an Web-Suchen: Externe Suchanfragen dürfen keine Namen, Hostnamen oder IP-Adressen enthalten."
+        "Keine Weitergabe interner Daten an Web-Suchen."
       ],
       security:
-        "Erst nach fachlicher Prüfung und Freigabe durch einen IT-Mitarbeiter wird der vorbereitete Antwortentwurf an den Endanwender versendet.",
+        "Tenant-AVV konform (Sweden Central, Zero-Data-Retention). Erst nach Prüfung und Freigabe durch einen IT-Mitarbeiter wird eine Antwort versendet.",
       evolution:
-        "Aktuell reiner Co-Pilot für Techniker. Bei wiederkehrenden Standardproblemen mit hohem Wissens-Score (≥ 0,92) kann das System später direkt einen vorausgefüllten Antwortentwurf im Ticket-Editor öffnen."
+        "Kosten dieses Bausteins: ca. 6,20 € / Monat bei 1.000 Tickets. In Stufe 2/3 auf teilautomatisierte Standardantworten und weitere Fachbereiche (HR, ERP) erweiterbar."
     },
 
     VECTOR_STORE: {
-      category: "Interne Wissensbasis • Azure AI Search",
+      category: "Interne Wissensbasis • Azure AI Search (PaaS)",
       title: "Semantischer Wissens-Index (Azure AI Search Vector Store)",
       what:
-        "Zentrales semantisches Wissensgedächtnis des IT-Servicedesks. Speichert alle internen Standard-Arbeitsanweisungen (SOPs), SharePoint-Wiki-Seiten, veröffentlichten Freshservice-KB-Artikel und anonymisierten historischen Ticketlösungen für sekundenschnelle Ähnlichkeitssuchen.",
+        "Zentrales semantisches Wissensgedächtnis des IT-Servicedesks. Speichert alle internen Standard-Arbeitsanweisungen (SOPs), SharePoint-Wiki-Seiten, veröffentlichten Freshservice-KB-Artikel und anonymisierten historischen Ticketlösungen.",
       tools:
         "Azure AI Search (Basic Tier, Sweden Central) • HNSW-Vektorindex (1.536 Dimensionen) • Embedding-Modell: text-embedding-3-small (EU)",
       where:
-        "Azure Portal → Azure AI Search (sdai-srch-*) → Index „it-servicedesk-kb“",
+        "Admin-Oberfläche: Azure Portal → Azure AI Search → Index „it-servicedesk-kb“ (vollautomatische Befüllung per Nacht-Sync)",
       how: [
-        "Index-Schema: Schlüsselfeld (SHA-256-Hash), Quelltyp (WIKI_PAGE, KB_ARTICLE, RESOLVED_TICKET), Titel, Text-Chunk, Zeitstempel und 1.536-dimensionaler Vektor.",
+        "Index-Schema: Schlüsselfeld (SHA-256-Hash), Quelltyp (WIKI_PAGE, KB_ARTICLE, RESOLVED_TICKET), Titel, Text-Chunk und 1.536-dimensionaler Vektor.",
         "Chunking-Strategie: Zerlegung langer Dokumente in Abschnitte à 2.400 Zeichen mit 300 Zeichen Überlappung für präzise Kontexttreffer.",
         "Hybrid-Retrieval: Kombination aus Vektor-Ähnlichkeitssuche (HNSW) und semantischem Ranking."
       ],
       blocked: [
         "Keine Speicherung ungefilterter Ticket-Klartexte: Alle Dokumente durchlaufen vor der Indexierung den PII-Sanitizer.",
-        "Kein öffentlicher Internet-Zugriff auf den Suchindex: Abfragen sind ausschließlich über authentifizierte Azure-Identitäten zulässig."
+        "Kein öffentlicher Internet-Zugriff auf den Suchindex."
       ],
       security:
-        "Datenhaltung ausschließlich im EU-Rechenzentrum Sweden Central. Zugriff durch die Function App erfolgt passwortlos über RBAC (Search Index Data Contributor).",
+        "Datenhaltung ausschließlich im EU-Rechenzentrum Sweden Central. Zugriff durch die Function App erfolgt passwortlos über RBAC.",
       evolution:
-        "Erweiterbar um zusätzliche Fachbereichs-Dokumentationen (z. B. ERP-/SAP-Handbücher oder Hardware-Rollout-Leitfäden) durch einfache Anbindung weiterer SharePoint-Sites."
+        "Kosten dieses Bausteins: ca. 1,35 € / Monat. Erweiterbar um getrennte Wissens-Indizes für weitere Unternehmensbereiche (HR, Einkauf, Facility Management)."
     },
 
     BING_GROUNDING: {
@@ -139,20 +139,19 @@
       tools:
         "Azure AI Foundry Connected Resource: Grounding with Bing Search • Vorgeschalteter Python PII-Sanitizer",
       where:
-        "Azure AI Foundry Portal → Management Center → Connected Resources → Grounding with Bing Search",
+        "Admin-Oberfläche: Azure AI Foundry Portal → Management Center → Connected Resources → Grounding with Bing Search",
       how: [
         "Trigger-Bedingung: Wird nur aufgerufen, wenn der interne Vector Store keinen ausreichenden Treffer (Score < 0,78) liefert.",
-        "Query-Extraktion: Der PII-Filter entfernt vorab sämtliche Namen, E-Mail-Adressen, IPs, Telefonnummern sowie Hostnamen und reduziert die Anfrage auf max. 120 Zeichen.",
-        "Kosten- und Audit-Tracking: Jeder externe Suchaufruf wird im Audit-Log mit „WebSearchTriggered = true“ markiert."
+        "Query-Extraktion: Der PII-Filter entfernt vorab sämtliche Namen, E-Mail-Adressen, IPs, Telefonnummern sowie Hostnamen und reduziert die Anfrage auf max. 120 Zeichen."
       ],
       blocked: [
         "Strikte PII-Ausgangssperre: Mitarbeiternamen, E-Mail-Adressen, Durchwahlen, interne IP-Adressen und Computernummern werden deterministisch herausgefiltert.",
-        "Kein Volltext-Upload von Tickets: Es gelangen niemals ganze Ticketbeschreibungen an externe Suchmaschinen, sondern nur abstrahierte Fehlercodes."
+        "Kein Volltext-Upload von Tickets: Es gelangen niemals ganze Ticketbeschreibungen an externe Suchmaschinen."
       ],
       security:
-        "Strikte Datentrennung: Nach außen gelangen ausschließlich abstrakte technische Fehlercodes (z. B. „Intune Enrollment Error 0x80180014“), keinerlei Unternehmens- oder Personendaten.",
+        "Strikte Datentrennung: Nach außen gelangen ausschließlich abstrakte technische Fehlercodes, keinerlei Unternehmens- oder Personendaten.",
       evolution:
-        "Kann bei Bedarf über Domain-Filter zusätzlich auf kuratierte Hersteller-Quellen (z. B. learn.microsoft.com) eingegrenzt werden."
+        "Kosten dieses Bausteins: ca. 1,80 € / Monat bei 1.000 Tickets (~20–25 % Web-Recherche-Quote)."
     },
 
     AGENT_3: {
@@ -163,20 +162,20 @@
       tools:
         "Azure AI Foundry (gpt-4.1 & gpt-4.1-mini) • Freshservice Solutions API (/api/v2/solutions/articles) • Microsoft Graph Mail API",
       where:
-        "Azure AI Foundry (servicedesk-agent-3-docs) & Azure Functions (ticket_closed_hook / weekly_kb_audit)",
+        "Admin-Oberfläche: Azure AI Foundry & Azure Functions (ticket_closed_hook / weekly_kb_audit)",
       how: [
         "Dubletten-Prüfung bei Ticket-Abschluss: Prüft im Vector Store (Score ≥ 0,85), ob bereits ein passender Artikel existiert, bevor ein Entwurf erzeugt wird.",
-        "Verbindliche 4-Punkte-Artikelstruktur: 1. Symptom & Fehlermeldung, 2. Betroffene Systeme / Voraussetzungen, 3. Schritt-für-Schritt-Lösung, 4. Verifikation.",
-        "Wöchentlicher Aktualitäts-Audit (Montag 07:00 Uhr): Prüft in Azure Table Storage (KbGovernance) alle Artikel mit LastVerifiedAt > 180 Tage und versendet eine Prüf-E-Mail an den Artikel-Owner."
+        "Verbindliche 4-Punkte-Artikelstruktur: 1. Symptom & Fehlermeldung, 2. Betroffene Systeme, 3. Schritt-für-Schritt-Lösung, 4. Verifikation.",
+        "Wöchentlicher Aktualitäts-Audit (Montag 07:00 Uhr): Erkennt Artikel älter als 180 Tage und versendet eine Prüf-E-Mail an den Artikel-Owner."
       ],
       blocked: [
-        "Keine Direktveröffentlichung von KB-Artikeln: Artikel werden über die API zwingend mit „status: 1“ (Draft / Entwurf) angelegt und müssen von einem IT-Mitarbeiter freigegeben werden.",
-        "Keine Übernahme von Personen- oder Gerätenamen: Vor der Generierung entfernt der PII-Filter alle individuellen Ticketdaten."
+        "Keine Direktveröffentlichung von KB-Artikeln: Artikel werden über die API zwingend mit „status: 1“ (Draft / Entwurf) angelegt und müssen manuell freigegeben werden.",
+        "Keine Übernahme von Personen- oder Gerätenamen."
       ],
       security:
         "Volle redaktionelle Kontrolle durch das IT-Team; E-Mail-Benachrichtigungen laufen passwortlos über Microsoft Graph API.",
       evolution:
-        "Aktuell reine Entwurfserstellung und E-Mail-Erinnerung. Später können freigegebene Artikel per Knopfdruck synchron ins SharePoint-Mitarbeiterportal gespiegelt werden."
+        "Kosten dieses Bausteins: ca. 2,40 € / Monat (Microsoft Graph Mail ist in bestehenden M365-Lizenzen enthalten = 0,00 €)."
     },
 
     NIGHTLY_SYNC: {
@@ -187,20 +186,20 @@
       tools:
         "Azure Functions Timer Trigger (CRON: 0 0 2 * * *) • Microsoft Graph API (Sites.Read.All) • Freshservice API • Azure OpenAI Embeddings",
       where:
-        "Azure Functions → Funktion „nightly_rag_sync“ (Ausführung täglich um 02:00 Uhr UTC)",
+        "Admin-Oberfläche: Azure Functions → Timer Trigger „nightly_rag_sync“ (täglich 02:00 Uhr UTC)",
       how: [
         "Inkrementelles Delta-Fenster: Ruft gezielt nur Änderungen der letzten 26 Stunden ab, um API-Kontingente und Embedding-Tokens minimal zu halten.",
         "Anonymisierungs- & Chunking-Pipeline: Bereinigt alle Texte vor der Vektorisierung und aktualisiert bestehende Vektor-IDs idempotent per Upsert.",
-        "Vollständige Entkopplung vom Live-Ticketbetrieb (keine Latenz-Auswirkungen tagsüber)."
+        "On-Premises-Bedarf: Keine lokale Hardware nötig (SharePoint Online & Freshservice Cloud)."
       ],
       blocked: [
         "Keine Schreibrechte auf SharePoint Online: Die Managed Identity besitzt ausschließlich Leserechte (Sites.Read.All).",
-        "Keine Importe offener oder privater HR-/Security-Tickets: Es werden nur abgeschlossene IT-Support-Tickets synchronisiert."
+        "Keine Importe offener oder privater HR-/Security-Tickets."
       ],
       security:
         "Passwortlose Authentifizierung gegen Microsoft Graph über Managed Identity mit minimalen Leserechten.",
       evolution:
-        "Kann bei höherer Änderungsfrequenz im IT-Wiki problemlos von nächtlicher auf stündliche Delta-Synchronisation umgestellt werden."
+        "Kosten dieses Bausteins: < 0,10 € / Monat (text-embedding-3-small EU kostet ca. 0,02 € pro 1 Mio. Tokens)."
     },
 
     VOICE_HOTLINE: {
@@ -211,20 +210,20 @@
       tools:
         "Azure Communication Services (SIP-Trunk & Call Automation) • Azure AI Speech Services (STT & Neural TTS) • Azure AI Foundry",
       where:
-        "Azure Portal → Azure Communication Services & Azure AI Speech (Region: Sweden Central)",
+        "Admin-Oberfläche: Azure Portal → Azure Communication Services & Azure AI Speech (Sweden Central)",
       how: [
         "SIP-Trunk-Integration: Anbindung an die bestehende Unternehmens-Telefonanlage (z. B. für Überlauf, Mittagszeit oder Rufbereitschaft).",
-        "Echtzeit-Sprachpipeline: Streaming Speech-to-Text kombiniert mit neuronaler deutscher Sprachausgabe (z. B. de-DE-KatjaNeural / ConradNeural) unter 800 ms Latenz.",
-        "Eskalations-Garantie: Auf Wunsch des Anrufers („Mitarbeiter sprechen“) sofortige Durchstellung an den 1st-Level-Support inklusive Übergabe des Gesprächsprotokolls."
+        "Echtzeit-Sprachpipeline: Streaming Speech-to-Text kombiniert mit neuronaler deutscher Sprachausgabe (de-DE-KatjaNeural / ConradNeural) unter 800 ms Latenz.",
+        "Eskalations-Garantie: Auf Wunsch des Anrufers („Mitarbeiter sprechen“) sofortige Durchstellung an den 1st-Level-Support inklusive Gesprächsprotokoll."
       ],
       blocked: [
         "Keine dauerhafte Aufzeichnung von Sprachmitschnitten: Audio-Streams werden ausschließlich flüchtig im Arbeitsspeicher verarbeitet.",
         "Keine Sackgassen-Menüs: Ein menschlicher Mitarbeiter ist jederzeit per Sprachbefehl erreichbar."
       ],
       security:
-        "100 % EU-Datenverarbeitung in Sweden Central unter denselben DSGVO- und Enterprise-Richtlinien wie der Ticket-Betrieb.",
+        "100 % EU-Datenverarbeitung in Sweden Central unter denselben Tenant-AVV- und DSGVO-Richtlinien wie der Ticket-Betrieb.",
       evolution:
-        "Startet optional als Überlauf- und Nacht-Assistent (Stufe 2a) und kann später für Passwort-Reset-Self-Service (mit MFA-Verifizierung) ausgebaut werden (Stufe 2b)."
+        "Kosten dieses Bausteins: ca. 201,50 € / Monat bei 750 Anrufen à 4 Min. (0,00 € bei 0 Anrufen; sekundengenaue Abrechnung)."
     }
   };
 
@@ -248,7 +247,7 @@
         "Keine Übertragung von Ticket-Klartexten in der Webhook-URL."
       ],
       security: "TLS-1.3-Transportverschlüsselung zwischen Freshworks EU-Cloud und Azure Sweden Central.",
-      evolution: "Kann um zusätzliche Trigger-Events (z. B. bei erneuter Rückmeldung eines Anwenders) erweitert werden."
+      evolution: "Kosten: 0,00 € (im Freshservice-Tarif und Azure Functions Free-Kontingent enthalten)."
     },
     E2: {
       label: "2. Asset-Abgleich: Orchestrator ↔ Freshservice CMDB",
@@ -266,7 +265,7 @@
         "Keine Speicherung von CMDB-Stammdaten außerhalb des Tickets."
       ],
       security: "API-Zugangsdaten werden zur Laufzeit per Managed Identity aus dem Azure Key Vault gelesen.",
-      evolution: "Später erweiterbar um Abfrage von Garantie-Status, Betriebssystem-Version oder Intune-Compliance-Status."
+      evolution: "Kosten: 0,00 € (im bestehenden Freshservice-Tarif enthalten)."
     },
     E3: {
       label: "3. Triage & Routing: Orchestrator ↔ Agent 1",
@@ -283,8 +282,8 @@
         "Keine Ausführung von Befehlen aus dem Tickettext (XML-Kapselung als Untrusted Input).",
         "Kein Verlassen der EU Data Zone."
       ],
-      security: "Authentifizierung über Entra ID Bearer Token Provider (kein statischer OpenAI-API-Key nötig).",
-      evolution: "Feinjustierung der Routing-Regeln jederzeit über die versionierte Prompt-Datei agent1_triage.md im Git-Repository."
+      security: "Durch bestehenden Microsoft Tenant-AVV abgedeckt; Authentifizierung über Entra ID Bearer Token.",
+      evolution: "Kosten: ca. 1,60 € / Monat bei 1.000 Tickets."
     },
     E4: {
       label: "4. Wissenssuche: Agent 2 ↔ Azure AI Search",
@@ -301,7 +300,7 @@
         "Kein Zugriff auf nicht freigegebene Abteilungs-Laufwerke oder vertrauliche HR-Dokumente."
       ],
       security: "Passwortloser Zugriff per System-Assigned Managed Identity.",
-      evolution: "Erweiterbar um rollenbasierte Filter (z. B. trennbar nach IT-Infrastruktur, ERP oder Produktions-IT)."
+      evolution: "Kosten: in der Azure AI Search Pauschale (~1,35 €/Monat) enthalten."
     },
     E5: {
       label: "5. Fehlercode-Suche: Agent 2 ↔ Bing Grounding",
@@ -319,7 +318,7 @@
         "Keine Übermittlung von Firmennamen, Benutzernamen oder internen Hostnamen."
       ],
       security: "100 % anonymisierte Suchanfrage ohne Rückschluss auf Unternehmen oder Mitarbeiter.",
-      evolution: "Optional eingrenzbar auf definierte Hersteller-Dokumentationen."
+      evolution: "Kosten: ca. 1,80 € / Monat bei 1.000 Tickets."
     },
     E6: {
       label: "6. Ergebnis-Rückgabe: Agent 2 → Freshservice Note",
@@ -336,8 +335,8 @@
         "Technisch unmöglich, öffentliche Kundenantworten (\"private\": false) zu senden (zusätzlich durch CI/CD-Security-Check abgesichert).",
         "Kein Überschreiben, falls zwischenzeitlich ein Techniker das Ticket übernommen hat."
       ],
-      security: "100 % Human-in-the-Loop durch erzwungene interne Notiz.",
-      evolution: "Später für ausgewählte Standard-Tickets auf teilautomatisierte Antwort-Vorbereitung erweiterbar."
+      security: "100 % Human-in-the-Loop im Pilot durch erzwungene interne Notiz.",
+      evolution: "Kosten: 0,00 €; in Stufe 2/3 für ausgewählte Standardfälle erweiterbar."
     },
     E7: {
       label: "7. Doku & Audit: Ticket Closed / Timer → Agent 3",
@@ -355,7 +354,7 @@
         "Keine Übernahme von Klarnamen oder Computernummern in Entwürfe."
       ],
       security: "Vollständige Entfernung aller Personen- und Gerätedaten vor Erstellung des Artikel-Entwurfs.",
-      evolution: "Kann künftig um automatische Verlinkung verwandter Artikel ergänzt werden."
+      evolution: "Kosten: ca. 2,40 € / Monat (Graph Mail = 0,00 €)."
     },
     E8: {
       label: "8. Nacht-Sync: SharePoint & Tickets → Vector Store",
@@ -373,7 +372,7 @@
         "Keine Beeinträchtigung der Live-Performance tagsüber."
       ],
       security: "Passwortloser Lesezugriff über Entra ID Managed Identity (Sites.Read.All).",
-      evolution: "Frequenz bei Bedarf auf stündliche Aktualisierung anpassbar."
+      evolution: "Kosten: < 0,10 € / Monat."
     },
     E9: {
       label: "9. Ausbaustufe 2: Voice-Hotline ↔ Agent 1 & 2",
@@ -391,7 +390,7 @@
         "Keine Blockade der Durchstellung an menschliche Techniker."
       ],
       security: "DSGVO-konforme Verarbeitung in der EU ohne dauerhafte Speicherung von Sprachaufnahmen.",
-      evolution: "Start als Überlauf-/Nacht-Hotline; später ausbaubar um automatisierte Identitätsprüfung."
+      evolution: "Kosten: sekundengenau nach Gesprächsdauer (0,00 € bei 0 Anrufen)."
     }
   };
 
@@ -414,30 +413,30 @@
         "Keine automatische Buchung kostenpflichtiger Freshworks-Marketplace-Apps oder Pro-Seat-KI-Lizenzen."
       ],
       security: "Alle Zugriffe laufen über den bestehenden Auftragsverarbeitungsvertrag (AVV) mit Freshworks sowie TLS-1.3-Verschlüsselung.",
-      evolution: "Skaliert ohne zusätzliche Lizenzgebühren bei steigendem Ticketvolumen."
+      evolution: "0,00 € Zusatzkosten – skaliert ohne weitere Lizenzgebühren bei steigendem Ticketvolumen."
     },
     COST_AGENT1: {
       category: "Kostenposition • Azure AI Foundry (gpt-4.1-mini)",
       title: "Agent 1: Triage, Pflichtfeldprüfung & Routing",
       what: "Verbrauchsabhängige Token-Kosten für die Echtzeit-Klassifizierung jedes eingehenden Tickets in der EU Data Zone.",
-      tools: "Azure AI Foundry • Modell: gpt-4.1-mini (Data Zone Standard EU)",
+      tools: "Azure AI Foundry (PaaS) • Modell: gpt-4.1-mini (Data Zone Standard EU)",
       where: "Azure Portal → Azure AI Foundry → Deployments → gpt-4-1-mini-eu",
       how: [
         "EU-Listenpreis (Stand 2026): ca. 0,41 € pro 1 Mio. Input-Tokens und 1,63 € pro 1 Mio. Output-Tokens.",
-        "Durchschnittlicher Verbrauch pro Ticket: ca. 1.200 Input-Tokens + 250 Output-Tokens ≈ 0,0009 € (unter 0,1 Cent pro Ticket).",
+        "Deutlich günstiger als Claude Code API: Nur rund 1/7 der Kosten vergleichbarer externer Frontier-APIs bei voller EU-Datenresidenz.",
         "Kalkulation für 1.000 Tickets/Monat: ca. 1,60 € (inklusive CMDB-Tool-Call-Runde und Sicherheitsreserve)."
       ],
       blocked: [
         "Kein unbegrenzter Token-Abruf: Das Deployment ist durch ein hartes Rate-Limit (15.000 TPM) sowie Max-Tokens (400) gedeckelt."
       ],
-      security: "Deployment in Sweden Central (Data Zone EU); Daten verlassen niemals den europäischen Rechtsraum.",
+      security: "Bereits durch den bestehenden Microsoft Tenant-AVV rechtlich abgedeckt; Daten verlassen niemals die EU-Region.",
       evolution: "Selbst bei 5.000 Tickets/Monat liegen die Kosten für Agent 1 unter 8,00 €."
     },
     COST_AGENT2: {
       category: "Kostenposition • Azure AI Foundry (gpt-4.1)",
       title: "Agent 2: Wissens-Synthese, Lösungsweg & Antwortentwurf",
       what: "Verbrauchskosten für das leistungsstarke Analyse-Modell „gpt-4.1“ (EU Data Zone), das aus RAG-Treffern und Fehlercodes die interne Techniker-Notiz erstellt.",
-      tools: "Azure AI Foundry • Modell: gpt-4.1 (Data Zone Standard EU)",
+      tools: "Azure AI Foundry (PaaS) • Modell: gpt-4.1 (Data Zone Standard EU)",
       where: "Azure Portal → Azure AI Foundry → Deployments → gpt-4-1-eu",
       how: [
         "EU-Listenpreis (Stand 2026): ca. 2,05 € pro 1 Mio. Input-Tokens und 8,15 € pro 1 Mio. Output-Tokens.",
@@ -448,7 +447,7 @@
         "Kein Aufruf bei unvollständigen Pflichtfeldern (spart ca. 15–20 % unnötige Modellkosten).",
         "Ausgabelänge hart auf max. 1.200 Tokens begrenzt."
       ],
-      security: "Zero-Data-Retention & kein Modell-Training durch Microsoft im Enterprise-Standard-Tarif.",
+      security: "Durch bestehenden Microsoft Tenant-AVV abgeprüft; Zero-Data-Retention & kein Modell-Training.",
       evolution: "Kosten wachsen streng linear mit dem tatsächlichen Ticketaufkommen."
     },
     COST_AGENT3: {
@@ -486,21 +485,21 @@
       evolution: "Transparentes Controlling aller Token- und API-Kosten pro Ticket und Agent in Echtzeit."
     },
     COST_INFRA_RAG: {
-      category: "Kostenposition • Wissensspeicher & Serverless Runtime",
-      title: "Azure AI Search Vector Store, EU-Embeddings & Nacht-Sync",
-      what: "Betriebskosten für den semantischen Vektor-Index, die nächtliche Embedding-Erstellung und die serverlose Code-Ausführung.",
-      tools: "Azure AI Search • text-embedding-3-small (EU) • Azure Functions (Consumption)",
+      category: "Kostenposition • 100 % Azure PaaS / Serverless Runtime",
+      title: "Azure AI Search Vector Store, EU-Embeddings & Azure Functions",
+      what: "Betriebskosten für den semantischen Vektor-Index, die nächtliche Embedding-Erstellung und die serverlose Code-Ausführung (100 % PaaS ohne VMs).",
+      tools: "Azure AI Search • text-embedding-3-small (EU) • Azure Functions (Consumption PaaS)",
       where: "Azure Portal → Azure AI Search & Function App (Sweden Central)",
       how: [
-        "Azure Functions (Consumption Plan): Die ersten 1.000.000 Ausführungen und 400.000 GB-Sekunden pro Monat sind dauerhaft kostenlos (0,00 €).",
-        "EU-Embeddings (text-embedding-3-small): ca. 0,02 € pro 1 Mio. Tokens (unter 0,10 €/Monat für den nächtlichen Delta-Sync).",
-        "Vector Store Speicher & Index-Betrieb (kompaktes IT-Wiki-Volumen): ca. 1,35 € – 1,50 €/Monat."
+        "Azure Functions (100 % PaaS / Serverless): Die ersten 1.000.000 Ausführungen und 400.000 GB-Sekunden pro Monat sind dauerhaft kostenlos (0,00 €).",
+        "Ersparnis gegenüber lokaler VM / Azure IaaS-VM: Eine 24/7 laufende VM kostet ca. 45 € – 90 €/Monat plus Wartungszeit für OS-Patching.",
+        "EU-Embeddings (text-embedding-3-small): < 0,10 €/Monat; Vector Store Index-Betrieb: ca. 1,35 €/Monat."
       ],
       blocked: [
-        "Keine dauerhaft laufenden virtuellen Maschinen (24/7-Fixkosten für VMs entfallen komplett durch Serverless-Architektur)."
+        "Keine dauerhaft laufenden virtuellen Maschinen (0 % IaaS-Wartung, 100 % Managed PaaS)."
       ],
       security: "Passwortloser Betrieb über Managed Identity in der EU-Region.",
-      evolution: "Skaliert automatisch von 0 auf hunderte gleichzeitige Anfragen ohne Server-Wartung."
+      evolution: "Skaliert automatisch von 0 auf hunderte gleichzeitige Anfragen und lässt sich auf weitere Abteilungen ausweiten."
     },
     COST_VOICE_SPEECH: {
       category: "Kostenposition • Ausbaustufe 2 (Voice & TTS)",
@@ -549,7 +548,7 @@
       blocked: [
         "Maximale Gesprächsdauer pro Session begrenzt (automatische Übergabe an Techniker bei komplexen Störungen)."
       ],
-      security: "Identische EU-Datenschutz- und Compliance-Garantien wie im Ticket-Betrieb.",
+      security: "Identische EU-Datenschutz- und Tenant-AVV-Garantien wie im Ticket-Betrieb.",
       evolution: "Kann später für standardisierte Self-Service-Vorgänge (z. B. Statusabfrage offener Tickets) genutzt werden."
     }
   };
@@ -566,12 +565,12 @@ flowchart LR
         NIGHTLY_SYNC["<b>Nächtlicher Wissens-Sync (02:00 Uhr)</b><br/>SharePoint IT-Wiki &amp; gelöste Tickets<br/><i>Azure Timer + Microsoft Graph API</i>"]
     end
 
-    subgraph CORE["2. Steuerung, Guardrails &amp; Compliance (Azure EU)"]
+    subgraph CORE["2. Steuerung, Guardrails &amp; Compliance (100 % Azure PaaS)"]
         direction TB
         ORCHESTRATOR["<b>Serverless Orchestrator &amp; Kollisionsschutz</b><br/>Pre-/Post-Flight-Check • PII-Filter • Audit-Log<br/><i>Azure Functions (Python 3.11) + Key Vault + Table Storage</i>"]
     end
 
-    subgraph AGENTS["3. Spezialisierte KI-Agenten (Azure AI Foundry • EU Data Zone)"]
+    subgraph AGENTS["3. Spezialisierte KI-Agenten (Azure AI Foundry • Tenant-AVV EU)"]
         direction TB
         AGENT_1["<b>Agent 1: Triage, Pflichtfeld &amp; Routing</b><br/>Prio 1–4 • PC-Nr.-Check • Fachgruppen-Routing<br/><i>Modell: gpt-4.1-mini (Data Zone EU)</i>"]
         AGENT_2["<b>Agent 2: Wissens- &amp; Lösungs-Agent</b><br/>Interne Recherche • Fehlercode-Analyse • Private Note<br/><i>Modell: gpt-4.1 (Data Zone EU)</i>"]
@@ -608,7 +607,7 @@ flowchart LR
   `;
 
   // =========================================================================
-  // 5. GOOGLE-MAPS-ARTIGE KARTENSTEUERUNG (PAN & ZOOM)
+  // 5. KARTENSTEUERUNG (PAN, ZOOM & VOLLBILD-MODUS)
   // =========================================================================
   let scale = 0.9;
   let panX = 16;
@@ -618,9 +617,11 @@ flowchart LR
   let dragStartY = 0;
   let movedDistance = 0;
 
+  const archFrame = document.getElementById("architectureFrame");
   const viewport = document.getElementById("mapViewport");
   const canvas = document.getElementById("mapCanvas");
   const zoomLabel = document.getElementById("zoomLevelLabel");
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
 
   function applyTransform() {
     if (!canvas) return;
@@ -631,7 +632,7 @@ flowchart LR
   }
 
   function setZoom(newScale, centerX, centerY) {
-    const clamped = Math.min(2.0, Math.max(0.5, newScale));
+    const clamped = Math.min(2.2, Math.max(0.45, newScale));
     if (viewport && typeof centerX === "number" && typeof centerY === "number") {
       const ratio = clamped / scale;
       panX = centerX - (centerX - panX) * ratio;
@@ -639,6 +640,26 @@ flowchart LR
     }
     scale = clamped;
     applyTransform();
+  }
+
+  function toggleFullscreen() {
+    if (!archFrame) return;
+    const isNowFull = !archFrame.classList.contains("is-fullscreen");
+    if (isNowFull) {
+      archFrame.classList.add("is-fullscreen");
+      document.body.style.overflow = "hidden";
+      if (fullscreenBtn) fullscreenBtn.textContent = "✕ Vollbild beenden";
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } else {
+      archFrame.classList.remove("is-fullscreen");
+      document.body.style.overflow = "";
+      if (fullscreenBtn) fullscreenBtn.textContent = "⛶ Vollbild";
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
   }
 
   function setupMapInteractions() {
@@ -692,6 +713,18 @@ flowchart LR
       panX = 16;
       panY = 20;
       applyTransform();
+    });
+
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener("click", toggleFullscreen);
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement && archFrame && archFrame.classList.contains("is-fullscreen")) {
+        archFrame.classList.remove("is-fullscreen");
+        document.body.style.overflow = "";
+        if (fullscreenBtn) fullscreenBtn.textContent = "⛶ Vollbild";
+      }
     });
   }
 
@@ -797,7 +830,7 @@ flowchart LR
     document.getElementById("modalWhere").textContent = data.where;
     document.getElementById("modalSecurity").textContent = data.security;
     document.getElementById("modalEvolution").textContent =
-      data.evolution || "Aktuell 100 % Human-in-the-Loop; schrittweise erweiterbar.";
+      data.evolution || "Pilot: 100 % Human-in-the-Loop; schrittweise auf Stufe 2 & 3 erweiterbar.";
 
     const ulHow = document.getElementById("modalHow");
     ulHow.innerHTML = "";
@@ -825,7 +858,9 @@ flowchart LR
   function closeModal() {
     if (!modal || modal.hidden) return;
     modal.hidden = true;
-    document.body.style.overflow = "";
+    if (!archFrame || !archFrame.classList.contains("is-fullscreen")) {
+      document.body.style.overflow = "";
+    }
   }
 
   document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
@@ -833,7 +868,13 @@ flowchart LR
     if (e.target === modal) closeModal();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
+    if (e.key === "Escape") {
+      if (modal && !modal.hidden) {
+        closeModal();
+      } else if (archFrame && archFrame.classList.contains("is-fullscreen")) {
+        toggleFullscreen();
+      }
+    }
   });
 
   // =========================================================================
@@ -900,7 +941,7 @@ flowchart LR
     s1Container.appendChild(
       createCostButton(
         "Azure AI Foundry: Agent 1 (gpt-4.1-mini)",
-        "Triage, Pflichtfeldprüfung & Routing (EU Data Zone)",
+        "Triage & Routing • Tenant-AVV geprüft • Günstiger als Claude API",
         formatEuro(costA1),
         "COST_AGENT1"
       )
@@ -908,7 +949,7 @@ flowchart LR
     s1Container.appendChild(
       createCostButton(
         "Azure AI Foundry: Agent 2 (gpt-4.1)",
-        "Wissens-Synthese & interne Lösungsnotiz (EU Data Zone)",
+        "Wissens-Synthese & interne Notiz (EU Data Zone)",
         formatEuro(costA2),
         "COST_AGENT2"
       )
@@ -931,8 +972,8 @@ flowchart LR
     );
     s1Container.appendChild(
       createCostButton(
-        "Azure AI Search Vector Store & Nacht-Sync",
-        "Wissens-Index, EU-Embeddings & Serverless Functions",
+        "100 % Azure PaaS: AI Search & Serverless Functions",
+        "Kein VM-Betrieb nötig • 1 Mio. Aufrufe gratis",
         formatEuro(costRagInfra),
         "COST_INFRA_RAG"
       )
